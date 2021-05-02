@@ -10,7 +10,7 @@
 composer require nystudio107/craft-plugin-vite
 ```
 
-## Plugin Manifest Overview
+## Plugin Vite Overview
 
 Plugin Vite is the conduit between Craft CMS plugins and Vite, with manifest.json & HMR support
 
