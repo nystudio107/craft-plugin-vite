@@ -247,10 +247,10 @@ class ViteService extends Component
     /**
      * Invalidate all of the Vite caches
      */
-    public static function invalidateCaches()
+    public function invalidateCaches()
     {
         $cache = Craft::$app->getCache();
-        TagDependency::invalidate($cache, self::CACHE_TAG);
+        TagDependency::invalidate($cache, self::CACHE_TAG . $this->cacheKeySuffix);
         Craft::info('All Vite caches cleared', __METHOD__);
     }
 
@@ -317,6 +317,19 @@ class ViteService extends Component
                                     ], $scriptTagAttrs)
                                 ];
                             }
+                            // Handle CSS inside of imports
+                            if (isset($manifest[$import]['css'])) {
+                                foreach ($manifest[$import]['css'] as $css) {
+                                    $url = $this->createUrl($this->serverPublic, $css);
+                                    $tags[] = [
+                                        'type' => 'css',
+                                        'url' => $url,
+                                        'options' => array_merge([
+                                            'rel' => 'stylesheet',
+                                        ], $asyncArgs, $cssTagAttrs)
+                                    ];
+                                }
+                            }
                         }
                     }
                     // If there are any CSS files, include them
@@ -365,8 +378,8 @@ class ViteService extends Component
         // Create the dependency tags
         $dependency = new TagDependency([
             'tags' => [
-                self::CACHE_TAG,
-                self::CACHE_TAG . $pathOrUrl,
+                self::CACHE_TAG . $this->cacheKeySuffix,
+                self::CACHE_TAG . $this->cacheKeySuffix . $pathOrUrl,
             ],
         ]);
         // If this is a file path such as for the `manifest.json`, add a FileDependency so it's cache bust if the file changes
