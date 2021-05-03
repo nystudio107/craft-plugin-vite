@@ -16,6 +16,7 @@ use craft\helpers\Html as HtmlHelper;
 use craft\helpers\Json as JsonHelper;
 use craft\helpers\UrlHelper;
 
+use yii\base\InvalidConfigException;
 use yii\caching\ChainedDependency;
 use yii\caching\FileDependency;
 use yii\caching\TagDependency;
@@ -161,7 +162,7 @@ class ViteService extends Component
      * @param array $cssTagAttrs
      *
      * @return void
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = [])
     {
@@ -181,7 +182,6 @@ class ViteService extends Component
      * @param array $scriptTagAttrs
      *
      * @return void
-     * @throws \yii\base\InvalidConfigException
      */
     public function devServerRegister(string $path, array $scriptTagAttrs = [])
     {
@@ -203,7 +203,7 @@ class ViteService extends Component
      * @param array $cssTagAttrs
      *
      * @return void
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function manifestRegister(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = [])
     {
@@ -235,13 +235,9 @@ class ViteService extends Component
         if (!$this->useDevServer) {
             return false;
         }
-
         $url = $this->createUrl($this->devServerInternal, self::VITE_CLIENT);
-        if ($this->fetchFile($url) === null) {
-            return false;
-        }
 
-        return true;
+        return !($this->fetchFile($url) === null);
     }
 
     /**
