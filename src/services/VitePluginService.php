@@ -39,11 +39,15 @@ class VitePluginService extends ViteService
      */
     public function init()
     {
-        self::invalidateCaches();
+        $this->invalidateCaches();
         // See if the $pluginDevServerEnvVar env var exists, and if not, don't run off of the dev server
         $useDevServer = getenv($this->pluginDevServerEnvVar);
         if ($useDevServer === false) {
             $this->useDevServer = false;
+        }
+        // If we're in a plugin, make sure the caches are unique
+        if ($this->assetClass) {
+            $this->cacheKeySuffix = $this->assetClass;
         }
         // If we have an asset bundle, and the dev server isn't running, then swap in our published asset bundle paths
         if ($this->assetClass && !$this->devServerRunning()) {
@@ -52,7 +56,7 @@ class VitePluginService extends ViteService
                 $bundle->sourcePath,
                 true
             );
-            $this->manifestPath = Craft::getAlias($bundle->sourcePath);
+            $this->manifestPath = Craft::getAlias($bundle->sourcePath).'/manifest.json';
             $this->serverPublic = $baseAssetsUrl;
         }
     }
