@@ -35,6 +35,8 @@ class ViteService extends Component
     // =========================================================================
 
     const VITE_CLIENT = '@vite/client.js';
+    const LEGACY_EXTENSION = '-legacy.';
+    const LEGACY_POLYFILLS = 'vite/legacy-polyfills';
 
     const CACHE_KEY = 'vite';
     const CACHE_TAG = 'vite';
@@ -42,6 +44,8 @@ class ViteService extends Component
     const DEVMODE_CACHE_DURATION = 1;
 
     const USER_AGENT_STRING = 'User-Agent:Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13';
+
+    const SAFARI_NOMODULE_FIX = '!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()},!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();';
 
     // Public Properties
     // =========================================================================
@@ -76,6 +80,19 @@ class ViteService extends Component
      * @var string String to be appended to the cache key
      */
     public $cacheKeySuffix = '';
+
+    // Protected Properties
+    // =========================================================================
+
+    /**
+     * @var bool Whether any legacy tags were found in this request
+     */
+    protected $hasLegacyTags = false;
+
+    /**
+     * @var bool Whether the legacy polyfill has been included yet or not
+     */
+    protected $legacyPolyfillIncluded = false;
 
     // Public Methods
     // =========================================================================
@@ -133,7 +150,14 @@ class ViteService extends Component
     public function manifestScript(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): string
     {
         $lines = [];
-        $tags = $this->extractManifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
+        $tags = $this->manifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
+        // Handle any legacy polyfills
+        if ($this->hasLegacyTags && !$this->legacyPolyfillIncluded) {
+            $lines[] = HtmlHelper::script(self::SAFARI_NOMODULE_FIX, []);
+            $legacyPolyfillTags = $this->extractManifestTags(self::LEGACY_POLYFILLS, $asyncCss, $scriptTagAttrs, $cssTagAttrs, true);
+            $tags = array_merge($legacyPolyfillTags, $tags);
+            $this->legacyPolyfillIncluded = true;
+        }
         foreach($tags as $tag) {
             if (!empty($tag)) {
                 switch ($tag['type']) {
@@ -208,7 +232,14 @@ class ViteService extends Component
     public function manifestRegister(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = [])
     {
         $view = Craft::$app->getView();
-        $tags = $this->extractManifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
+        $tags = $this->manifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
+        // Handle any legacy polyfills
+        if ($this->hasLegacyTags && !$this->legacyPolyfillIncluded) {
+            $view->registerScript(self::SAFARI_NOMODULE_FIX, $view::POS_HEAD, []);
+            $legacyPolyfillTags = $this->extractManifestTags(self::LEGACY_POLYFILLS, $asyncCss, $scriptTagAttrs, $cssTagAttrs, true);
+            $tags = array_merge($legacyPolyfillTags, $tags);
+            $this->legacyPolyfillIncluded = true;
+        }
         foreach($tags as $tag) {
             if (!empty($tag)) {
                 switch ($tag['type']) {
@@ -254,6 +285,40 @@ class ViteService extends Component
     // =========================================================================
 
     /**
+     * Return an array of tags from the manifest, for both modern and legacy builds
+     *
+     * @param string $path
+     * @param bool $asyncCss
+     * @param array $scriptTagAttrs
+     * @param array $cssTagAttrs
+     *
+     * @return array
+     */
+    protected function manifestTags(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): array
+    {
+        // Get the modern tags for this $path
+        $tags = $this->extractManifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs, false);
+        // Look for a legacy version of this $path too
+        $parts = pathinfo($path);
+        $legacyPath = $parts['dirname']
+            . '/'
+            . $parts['filename']
+            . self::LEGACY_EXTENSION
+            . $parts['extension'];
+        $legacyTags = $this->extractManifestTags($legacyPath, $asyncCss, $scriptTagAttrs, $cssTagAttrs, true);
+        // Set a flag to indicate the some legacy gets were found
+        $legacyPolyfillTags = [];
+        if (!empty($legacyTags)) {
+            $this->hasLegacyTags = true;
+        }
+        return array_merge(
+            $legacyPolyfillTags,
+            $tags,
+            $legacyTags
+        );
+    }
+
+    /**
      * Return an array of data describing the  script, module link, and CSS link tags for the
      * script from the manifest.json file
      *
@@ -264,7 +329,7 @@ class ViteService extends Component
      *
      * @return array
      */
-    public function extractManifestTags(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): array
+    protected function extractManifestTags(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = [], $legacy = false): array
     {
         $tags = [];
         // Grab the manifest
@@ -277,11 +342,21 @@ class ViteService extends Component
             return [];
         }
         // Set the async CSS args
-        $asyncArgs = [];
+        $asyncCssOptions = [];
         if ($asyncCss) {
-            $asyncArgs = [
+            $asyncCssOptions = [
                 'media' => 'print',
                 'onload' => "this.media='all'",
+            ];
+        }
+        // Set the script args
+        $scriptOptions = [
+            'type' => 'module',
+            'crossorigin' => true,
+        ];
+        if ($legacy) {
+            $scriptOptions = [
+                'type' => 'nomodule',
             ];
         }
         // Iterate through the manifest
@@ -293,10 +368,7 @@ class ViteService extends Component
                     $tags[] = [
                         'type' => 'file',
                         'url' => $url,
-                        'options' => array_merge([
-                            'type' => 'module',
-                            'crossorigin' => true,
-                        ], $scriptTagAttrs)
+                        'options' => array_merge($scriptOptions, $scriptTagAttrs)
                     ];
                     // @TODO Imports are actually just a list of dynamic imports, so we probably don't need to be including them
                     if (isset($entry['imports'])) {
@@ -322,7 +394,7 @@ class ViteService extends Component
                                         'url' => $url,
                                         'options' => array_merge([
                                             'rel' => 'stylesheet',
-                                        ], $asyncArgs, $cssTagAttrs)
+                                        ], $asyncCssOptions, $cssTagAttrs)
                                     ];
                                 }
                             }
@@ -337,7 +409,7 @@ class ViteService extends Component
                                 'url' => $url,
                                 'options' => array_merge([
                                     'rel' => 'stylesheet',
-                                ], $asyncArgs, $cssTagAttrs)
+                                ], $asyncCssOptions, $cssTagAttrs)
                             ];
                         }
                     }
@@ -356,7 +428,7 @@ class ViteService extends Component
      *
      * @return string
      */
-    public function createUrl(string $url, string $path): string
+    protected function createUrl(string $url, string $path): string
     {
         $url = (string)Craft::parseEnv($url);
         return rtrim($url, '/') . '/' . trim($path, '/');
@@ -369,7 +441,7 @@ class ViteService extends Component
      * @param callable|null $callback
      * @return mixed
      */
-    public function fetchFile(string $pathOrUrl, callable $callback = null)
+    protected function fetchFile(string $pathOrUrl, callable $callback = null)
     {
         // Create the dependency tags
         $dependency = new TagDependency([
