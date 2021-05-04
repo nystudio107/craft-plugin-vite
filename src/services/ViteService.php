@@ -235,7 +235,7 @@ class ViteService extends Component
         $tags = $this->manifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
         // Handle any legacy polyfills
         if ($this->hasLegacyTags && !$this->legacyPolyfillIncluded) {
-            $view->registerScript(self::SAFARI_NOMODULE_FIX, $view::POS_HEAD, []);
+            $view->registerScript(self::SAFARI_NOMODULE_FIX, $view::POS_HEAD, [], 'SAFARI_NOMODULE_FIX');
             $legacyPolyfillTags = $this->extractManifestTags(self::LEGACY_POLYFILLS, $asyncCss, $scriptTagAttrs, $cssTagAttrs, true);
             $tags = array_merge($legacyPolyfillTags, $tags);
             $this->legacyPolyfillIncluded = true;
@@ -244,7 +244,12 @@ class ViteService extends Component
             if (!empty($tag)) {
                 switch ($tag['type']) {
                     case 'file':
-                        $view->registerScript('', $view::POS_HEAD, array_merge(['src' => $tag['url']],$tag['options']));
+                        $view->registerScript(
+                            '',
+                            $view::POS_HEAD,
+                            array_merge(['src' => $tag['url']], $tag['options']),
+                            md5($tag['url'] . json_encode($tag['options']))
+                        );
                         break;
                     case 'css':
                         $view->registerCssFile($tag['url'], $tag['options']);
