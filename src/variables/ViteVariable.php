@@ -12,8 +12,9 @@ namespace nystudio107\pluginvite\variables;
 
 use nystudio107\pluginvite\services\ViteService;
 
-use Craft;
 use craft\helpers\Template;
+
+use yii\base\InvalidConfigException;
 
 use Twig\Markup;
 
@@ -63,7 +64,7 @@ class ViteVariable
      * @param array $cssTagAttrs
      *
      * @return string
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): string
     {
