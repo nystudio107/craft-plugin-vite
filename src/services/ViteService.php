@@ -66,12 +66,6 @@ class ViteService extends Component
     public $devServerPublic;
 
     /**
-     * @var string The internal URL to the dev server, when accessed from the environment in which PHP is executing
-     *              This can be the same as `$devServerPublic`, but may be different in containerized or VM setups
-     */
-    public $devServerInternal;
-
-    /**
      * @var string The public URL to use when not using the dev server
      */
     public $serverPublic;
@@ -110,7 +104,7 @@ class ViteService extends Component
      */
     public function script(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): string
     {
-        if ($this->devServerRunning()) {
+        if ($this->useDevServer) {
             return $this->devServerScript($path, $scriptTagAttrs);
         }
 
@@ -190,7 +184,7 @@ class ViteService extends Component
      */
     public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = [])
     {
-        if ($this->devServerRunning()) {
+        if ($this->useDevServer()) {
             $this->devServerRegister($path, $scriptTagAttrs);
 
             return;
@@ -259,21 +253,6 @@ class ViteService extends Component
                 }
             }
         }
-    }
-
-    /**
-     * Determine whether the Vite dev server is running
-     *
-     * @return bool
-     */
-    public function devServerRunning(): bool
-    {
-        if (!$this->useDevServer) {
-            return false;
-        }
-        $url = $this->createUrl($this->devServerInternal, self::VITE_CLIENT);
-
-        return !($this->fetchFile($url) === null);
     }
 
     /**

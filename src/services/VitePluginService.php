@@ -50,7 +50,7 @@ class VitePluginService extends ViteService
             $this->cacheKeySuffix = $this->assetClass;
         }
         // If we have an asset bundle, and the dev server isn't running, then swap in our published asset bundle paths
-        if ($this->assetClass && !$this->devServerRunning()) {
+        if ($this->assetClass && !$this->useDevServer) {
             $bundle = new $this->assetClass;
             $baseAssetsUrl = Craft::$app->assetManager->getPublishedUrl(
                 $bundle->sourcePath,
