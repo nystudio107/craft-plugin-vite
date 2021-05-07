@@ -1,6 +1,9 @@
 # Plugin Vite Changelog
 
-## 1.0.2 - UNRELEASED
+## 1.0.2 - 2021-05-07
+### Changed
+* Crawl the `manifest.json` dependency graph recursively to look for CSS files
+
 ### Fixed
 * Don't call any AssetManager methods in the component `init()` method during console requests
 
