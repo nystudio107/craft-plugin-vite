@@ -1,5 +1,9 @@
 # Plugin Vite Changelog
 
+## 1.0.3 - UNRELEASED
+### Changed
+* Refactored `extractCssFiles()` to be simpler
+
 ## 1.0.2 - 2021-05-07
 ### Changed
 * Crawl the `manifest.json` dependency graph recursively to look for CSS files
