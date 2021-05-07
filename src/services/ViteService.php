@@ -184,7 +184,7 @@ class ViteService extends Component
      */
     public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = [])
     {
-        if ($this->useDevServer()) {
+        if ($this->useDevServer) {
             $this->devServerRegister($path, $scriptTagAttrs);
 
             return;
@@ -344,64 +344,64 @@ class ViteService extends Component
             ];
         }
         // Iterate through the manifest
-        foreach ($manifest as $manifestFile => $entry) {
+        foreach ($manifest as $manifestKey => $entry) {
             if (isset($entry['isEntry']) && $entry['isEntry']) {
                 // Include the entry script
-                if (isset($entry['file']) && strpos($path, $manifestFile) !== false) {
-                    $url = $this->createUrl($this->serverPublic, $entry['file']);
+                if (isset($entry['file']) && strpos($path, $manifestKey) !== false) {
                     $tags[] = [
                         'type' => 'file',
-                        'url' => $url,
+                        'url' => $this->createUrl($this->serverPublic, $entry['file']),
                         'options' => array_merge($scriptOptions, $scriptTagAttrs)
                     ];
-                    // @TODO Imports are actually just a list of dynamic imports, so we probably don't need to be including them
-                    if (isset($entry['imports'])) {
-                        foreach ($entry['imports'] as $import) {
-                            if (isset($manifest[$import]['file'])) {
-                                $url = $this->createUrl($this->serverPublic, $manifest[$import]['file']);
-                                $tags[] = [
-                                    'type' => 'imports',
-                                    'url' => $url,
-                                    'options' => array_merge([
-                                        'rel' => 'modulepreload',
-                                        'as' => 'script',
-                                        'crossorigin' => true,
-                                    ], $scriptTagAttrs)
-                                ];
-                            }
-                            // Handle CSS inside of imports
-                            if (isset($manifest[$import]['css'])) {
-                                foreach ($manifest[$import]['css'] as $css) {
-                                    $url = $this->createUrl($this->serverPublic, $css);
-                                    $tags[] = [
-                                        'type' => 'css',
-                                        'url' => $url,
-                                        'options' => array_merge([
-                                            'rel' => 'stylesheet',
-                                        ], $asyncCssOptions, $cssTagAttrs)
-                                    ];
-                                }
-                            }
-                        }
-                    }
-                    // If there are any CSS files, include them
-                    if (isset($entry['css'])) {
-                        foreach ($entry['css'] as $css) {
-                            $url = $this->createUrl($this->serverPublic, $css);
-                            $tags[] = [
-                                'type' => 'css',
-                                'url' => $url,
-                                'options' => array_merge([
-                                    'rel' => 'stylesheet',
-                                ], $asyncCssOptions, $cssTagAttrs)
-                            ];
-                        }
+                    // Include any CSS tags
+                    $cssFiles = [];
+                    $this->extractCssFiles($manifest, $manifestKey, $cssFiles);
+                    foreach ($cssFiles as $cssFile) {
+                        $tags[] = [
+                            'type' => 'css',
+                            'url' => $this->createUrl($this->serverPublic, $cssFile),
+                            'options' => array_merge([
+                                'rel' => 'stylesheet',
+                            ], $asyncCssOptions, $cssTagAttrs)
+                        ];
                     }
                 }
             }
         }
 
         return $tags;
+    }
+
+    /**
+     * Extract any CSS files from entries recursively
+     *
+     * @param array $manifest
+     * @param string $manifestKey
+     * @param array $cssFiles
+     */
+    protected function extractCssFiles(array $manifest, string $manifestKey, array &$cssFiles)
+    {
+        if (isset($manifest[$manifestKey])) {
+            $entry = $manifest[$manifestKey];
+            // Handle any CSS files
+            if (isset($entry['css'])) {
+                foreach ($entry['css'] as $css) {
+                    $cssFiles[] = $css;
+                }
+            }
+            //  Handle imports recursively
+            if (isset($entry['imports'])) {
+                foreach ($entry['imports'] as $import) {
+                    $this->extractCssFiles($manifest, $import, $cssFiles);
+                }
+            }
+            //  Handle dynamic imports recursively
+            if (isset($entry['dynamicImports'])) {
+                foreach ($entry['dynamicImports'] as $dynamicImport) {
+                    $this->extractCssFiles($manifest, $dynamicImport, $cssFiles);
+                }
+            }
+        }
     }
 
     /**
