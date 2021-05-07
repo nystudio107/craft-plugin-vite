@@ -379,29 +379,19 @@ class ViteService extends Component
      * @param string $manifestKey
      * @param array $cssFiles
      */
-    protected function extractCssFiles(array $manifest, string $manifestKey, array &$cssFiles)
+    protected function extractCssFiles(array $manifest, string $manifestKey, array &$cssFiles): array
     {
-        if (isset($manifest[$manifestKey])) {
-            $entry = $manifest[$manifestKey];
-            // Handle any CSS files
-            if (isset($entry['css'])) {
-                foreach ($entry['css'] as $css) {
-                    $cssFiles[] = $css;
-                }
-            }
-            //  Handle imports recursively
-            if (isset($entry['imports'])) {
-                foreach ($entry['imports'] as $import) {
-                    $this->extractCssFiles($manifest, $import, $cssFiles);
-                }
-            }
-            //  Handle dynamic imports recursively
-            if (isset($entry['dynamicImports'])) {
-                foreach ($entry['dynamicImports'] as $dynamicImport) {
-                    $this->extractCssFiles($manifest, $dynamicImport, $cssFiles);
-                }
-            }
+        $entry = $manifest[$manifestKey] ?? null;
+        if (!$entry) {
+            return [];
         }
+        $cssFiles = array_merge($cssFiles, $entry['css'] ?? []);
+        $imports = array_merge($entry['imports'] ?? [], $entry['dynamicImport'] ?? []);
+        foreach ($imports as $import) {
+            $this->extractCssFiles($manifest, $import, $cssFiles);
+        }
+
+        return $cssFiles;
     }
 
     /**
