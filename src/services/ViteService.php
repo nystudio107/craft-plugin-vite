@@ -75,6 +75,18 @@ class ViteService extends Component
      */
     public $cacheKeySuffix = '';
 
+    /**
+     * @var string The internal URL to the dev server, when accessed from the environment in which PHP is executing
+     *              This can be the same as `$devServerPublic`, but may be different in containerized or VM setups.
+     *              ONLY used if $checkDevServer = true
+     */
+    public $devServerInternal;
+
+    /**
+     * @var bool Should we check for the presence of the dev server by pinging $devServerInternal to make sure it's running?
+     */
+    public $checkDevServer = false;
+
     // Protected Properties
     // =========================================================================
 
@@ -104,7 +116,7 @@ class ViteService extends Component
      */
     public function script(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): string
     {
-        if ($this->useDevServer) {
+        if ($this->devServerRunning()) {
             return $this->devServerScript($path, $scriptTagAttrs);
         }
 
@@ -184,7 +196,7 @@ class ViteService extends Component
      */
     public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = [])
     {
-        if ($this->useDevServer) {
+        if ($this->devServerRunning()) {
             $this->devServerRegister($path, $scriptTagAttrs);
 
             return;
@@ -253,6 +265,27 @@ class ViteService extends Component
                 }
             }
         }
+    }
+
+    /**
+     * Determine whether the Vite dev server is running
+     *
+     * @return bool
+     */
+    public function devServerRunning(): bool
+    {
+        // If the dev server is turned off via config, say it's not running
+        if (!$this->useDevServer) {
+            return false;
+        }
+        // If we're not supposed to check that the dev server is actually running, just assume it is
+        if (!$this->checkDevServer) {
+            return true;
+        }
+        // Check to see if the dev server is actually running by pinging it
+        $url = $this->createUrl($this->devServerInternal, self::VITE_CLIENT);
+
+        return !($this->fetchFile($url) === null);
     }
 
     /**
@@ -379,29 +412,19 @@ class ViteService extends Component
      * @param string $manifestKey
      * @param array $cssFiles
      */
-    protected function extractCssFiles(array $manifest, string $manifestKey, array &$cssFiles)
+    protected function extractCssFiles(array $manifest, string $manifestKey, array &$cssFiles): array
     {
-        if (isset($manifest[$manifestKey])) {
-            $entry = $manifest[$manifestKey];
-            // Handle any CSS files
-            if (isset($entry['css'])) {
-                foreach ($entry['css'] as $css) {
-                    $cssFiles[] = $css;
-                }
-            }
-            //  Handle imports recursively
-            if (isset($entry['imports'])) {
-                foreach ($entry['imports'] as $import) {
-                    $this->extractCssFiles($manifest, $import, $cssFiles);
-                }
-            }
-            //  Handle dynamic imports recursively
-            if (isset($entry['dynamicImports'])) {
-                foreach ($entry['dynamicImports'] as $dynamicImport) {
-                    $this->extractCssFiles($manifest, $dynamicImport, $cssFiles);
-                }
-            }
+        $entry = $manifest[$manifestKey] ?? null;
+        if (!$entry) {
+            return [];
         }
+        $cssFiles = array_merge($cssFiles, $entry['css'] ?? []);
+        $imports = array_merge($entry['imports'] ?? [], $entry['dynamicImport'] ?? []);
+        foreach ($imports as $import) {
+            $this->extractCssFiles($manifest, $import, $cssFiles);
+        }
+
+        return $cssFiles;
     }
 
     /**

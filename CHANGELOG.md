@@ -1,5 +1,12 @@
 # Plugin Vite Changelog
 
+## 1.0.3 - 2021.05.08
+### Added
+* Added the `devServerInternal` setting back in, along with `checkDevServer` for people who want the fallback behavior (https://github.com/nystudio107/craft-vite/issues/2)
+
+### Changed
+* Refactored `extractCssFiles()` to be simpler
+
 ## 1.0.2 - 2021-05-07
 ### Changed
 * Crawl the `manifest.json` dependency graph recursively to look for CSS files
