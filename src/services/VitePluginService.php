@@ -40,28 +40,32 @@ class VitePluginService extends ViteService
     public function init()
     {
         parent::init();
+        // Do nothing for console requests
         $request = Craft::$app->getRequest();
-        if (!$request->getIsConsoleRequest()) {
-            $this->invalidateCaches();
-            // See if the $pluginDevServerEnvVar env var exists, and if not, don't run off of the dev server
-            $useDevServer = getenv($this->pluginDevServerEnvVar);
-            if ($useDevServer === false) {
-                $this->useDevServer = false;
-            }
-            // If we're in a plugin, make sure the caches are unique
-            if ($this->assetClass) {
-                $this->cacheKeySuffix = $this->assetClass;
-            }
-            // If we have an asset bundle, and the dev server isn't running, then swap in our published asset bundle paths
-            if ($this->assetClass && !$this->devServerRunning()) {
-                $bundle = new $this->assetClass;
-                $baseAssetsUrl = Craft::$app->assetManager->getPublishedUrl(
-                    $bundle->sourcePath,
-                    true
-                );
-                $this->manifestPath = Craft::getAlias($bundle->sourcePath) . '/manifest.json';
-                $this->serverPublic = $baseAssetsUrl;
-            }
+        if ($request->getIsConsoleRequest()) {
+            return;
         }
+        $this->invalidateCaches();
+        // See if the $pluginDevServerEnvVar env var exists, and if not, don't run off of the dev server
+        $useDevServer = getenv($this->pluginDevServerEnvVar);
+        if ($useDevServer === false) {
+            $this->useDevServer = false;
+        }
+        // If we have no asset bundle class, or the dev server is running, don't swap in our `/cpresources/` paths
+        if (!$this->assetClass || $this->devServerRunning()) {
+            return;
+        }
+        // If we're in a plugin, make sure the caches are unique
+        if ($this->assetClass) {
+            $this->cacheKeySuffix = $this->assetClass;
+        }
+        // Map the $manifestPath and $serverPublic to the hashed `/cpresources/` path & URL for our AssetBundle
+        $bundle = new $this->assetClass;
+        $baseAssetsUrl = Craft::$app->assetManager->getPublishedUrl(
+            $bundle->sourcePath,
+            true
+        );
+        $this->manifestPath = Craft::getAlias($bundle->sourcePath) . '/manifest.json';
+        $this->serverPublic = $baseAssetsUrl;
     }
 }
