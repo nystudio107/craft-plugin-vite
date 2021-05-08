@@ -2,7 +2,7 @@
 
 ## 1.0.3 - 2021.05.08
 ### Added
-* Added the `devServerInternal` setting back in, along with `checkDevServer` for people who want the fallback behavior
+* Added the `devServerInternal` setting back in, along with `checkDevServer` for people who want the fallback behavior (https://github.com/nystudio107/craft-vite/issues/2)
 
 ### Changed
 * Refactored `extractCssFiles()` to be simpler
