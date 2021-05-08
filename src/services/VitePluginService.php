@@ -20,6 +20,11 @@ use craft\web\AssetBundle;
  */
 class VitePluginService extends ViteService
 {
+    // Constants
+    // =========================================================================
+
+    const MANIFEST_FILE_NAME = 'manifest.json';
+
     // Public Properties
     // =========================================================================
 
@@ -65,7 +70,7 @@ class VitePluginService extends ViteService
             $bundle->sourcePath,
             true
         );
-        $this->manifestPath = Craft::getAlias($bundle->sourcePath) . '/manifest.json';
+        $this->manifestPath = $this->createUrl($bundle->sourcePath, self::MANIFEST_FILE_NAME);
         $this->serverPublic = $baseAssetsUrl;
     }
 }
