@@ -1,6 +1,9 @@
 # Plugin Vite Changelog
 
-## 1.0.3 - UNRELEASED
+## 1.0.3 - 2021.05.08
+### Added
+* Added the `devServerInternal` setting back in, along with `checkDevServer` for people who want the fallback behavior
+
 ### Changed
 * Refactored `extractCssFiles()` to be simpler
 
