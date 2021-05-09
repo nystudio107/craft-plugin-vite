@@ -2,6 +2,12 @@
 
 # Plugin Vite
 
+Related Articles:
+
+[Vite.js Next Generation Frontend Tooling + Craft CMS](https://nystudio107.com/blog/using-vite-js-next-generation-frontend-tooling-with-craft-cms)
+
+[A Vite Buildchain for Craft CMS Plugins](https://nystudio107.com/blog/a-vite-buildchain-for-craft-cms-plugins)
+
 ## Requirements
 
 * Craft CMS 3.0.0 or later
