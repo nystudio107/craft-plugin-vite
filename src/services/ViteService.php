@@ -218,10 +218,11 @@ class ViteService extends Component
         $view = Craft::$app->getView();
         // Include the entry script
         $url = $this->createUrl($this->devServerPublic, $path);
-        $view->registerScript('', $view::POS_HEAD, array_merge([
-            'type' => 'module',
-            'src' => $url,
-            ], $scriptTagAttrs));
+        $view->registerJsFile(
+            $url,
+            array_merge(['type' => 'module'], $scriptTagAttrs),
+            md5($url . json_encode($scriptTagAttrs))
+        );
     }
 
     /**
@@ -250,15 +251,17 @@ class ViteService extends Component
             if (!empty($tag)) {
                 switch ($tag['type']) {
                     case 'file':
-                        $view->registerScript(
-                            '',
-                            $view::POS_HEAD,
-                            array_merge(['src' => $tag['url']], $tag['options']),
+                        $view->registerJsFile(
+                            $tag['url'],
+                            $tag['options'],
                             md5($tag['url'] . json_encode($tag['options']))
                         );
                         break;
                     case 'css':
-                        $view->registerCssFile($tag['url'], $tag['options']);
+                        $view->registerCssFile(
+                            $tag['url'],
+                            $tag['options']
+                        );
                         break;
                     default:
                         break;
