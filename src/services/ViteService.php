@@ -15,6 +15,7 @@ use craft\base\Component;
 use craft\helpers\Html as HtmlHelper;
 use craft\helpers\Json as JsonHelper;
 use craft\helpers\UrlHelper;
+use craft\web\View;
 
 use yii\base\InvalidConfigException;
 use yii\caching\ChainedDependency;
@@ -23,6 +24,8 @@ use yii\caching\TagDependency;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
+
+use Throwable;
 
 /**
  * @author    nystudio107
@@ -41,7 +44,7 @@ class ViteService extends Component
     const CACHE_KEY = 'vite';
     const CACHE_TAG = 'vite';
 
-    const DEVMODE_CACHE_DURATION = 1;
+    const DEVMODE_CACHE_DURATION = 30;
 
     const USER_AGENT_STRING = 'User-Agent:Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13';
 
@@ -69,6 +72,12 @@ class ViteService extends Component
      * @var string The public URL to use when not using the dev server
      */
     public $serverPublic;
+
+    /**
+     * @var string The JavaScript entry from the manifest.json to inject on Twig error pages
+     *              This can be a string or an array of strings
+     */
+    public $errorEntry = '';
 
     /**
      * @var string String to be appended to the cache key
@@ -102,6 +111,23 @@ class ViteService extends Component
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
+    public function init()
+    {
+        parent::init();
+        // Do nothing for console requests
+        $request = Craft::$app->getRequest();
+        if ($request->getIsConsoleRequest()) {
+            return;
+        }
+        // Our component is lazily loaded, so the View will be instantiated by now
+        if (Craft::$app->getConfig()->getGeneral()->devMode) {
+            Craft::$app->getView()->on(View::EVENT_END_BODY, [$this, 'injectErrorEntry']);
+        }
+    }
 
     /**
      * Return the appropriate tags to load the Vite script, either via the dev server or
@@ -212,16 +238,18 @@ class ViteService extends Component
      * @param array $scriptTagAttrs
      *
      * @return void
+     * @throws InvalidConfigException
      */
     public function devServerRegister(string $path, array $scriptTagAttrs = [])
     {
         $view = Craft::$app->getView();
         // Include the entry script
         $url = $this->createUrl($this->devServerPublic, $path);
-        $view->registerScript('', $view::POS_HEAD, array_merge([
-            'type' => 'module',
-            'src' => $url,
-            ], $scriptTagAttrs));
+        $view->registerJsFile(
+            $url,
+            array_merge(['type' => 'module'], $scriptTagAttrs),
+            md5($url . JsonHelper::encode($scriptTagAttrs))
+        );
     }
 
     /**
@@ -250,21 +278,104 @@ class ViteService extends Component
             if (!empty($tag)) {
                 switch ($tag['type']) {
                     case 'file':
-                        $view->registerScript(
-                            '',
-                            $view::POS_HEAD,
-                            array_merge(['src' => $tag['url']], $tag['options']),
-                            md5($tag['url'] . json_encode($tag['options']))
+                        $view->registerJsFile(
+                            $tag['url'],
+                            $tag['options'],
+                            md5($tag['url'] . JsonHelper::encode($tag['options']))
                         );
                         break;
                     case 'css':
-                        $view->registerCssFile($tag['url'], $tag['options']);
+                        $view->registerCssFile(
+                            $tag['url'],
+                            $tag['options']
+                        );
                         break;
                     default:
                         break;
                 }
             }
         }
+    }
+
+    /**
+     * Return the contents of a local file (via path) or remote file (via URL),
+     * or null if the file doesn't exist or couldn't be fetched
+     * Yii2 aliases and/or environment variables may be used
+     *
+     * @param string $pathOrUrl
+     * @param callable|null $callback
+     *
+     * @return string|null
+     */
+    public function fetch(string $pathOrUrl, callable $callback = null)
+    {
+        $pathOrUrl = (string)Craft::parseEnv($pathOrUrl);
+        // Create the dependency tags
+        $dependency = new TagDependency([
+            'tags' => [
+                self::CACHE_TAG . $this->cacheKeySuffix,
+                self::CACHE_TAG . $this->cacheKeySuffix . $pathOrUrl,
+            ],
+        ]);
+        // If this is a file path such as for the `manifest.json`, add a FileDependency so it's cache bust if the file changes
+        if (!UrlHelper::isAbsoluteUrl($pathOrUrl)) {
+            $dependency = new ChainedDependency([
+                'dependencies' => [
+                    new FileDependency([
+                        'fileName' => $pathOrUrl
+                    ]),
+                    $dependency
+                ]
+            ]);
+        }
+        // Set the cache duration based on devMode
+        $cacheDuration = Craft::$app->getConfig()->getGeneral()->devMode
+            ? self::DEVMODE_CACHE_DURATION
+            : null;
+        // Get the result from the cache, or parse the file
+        $cache = Craft::$app->getCache();
+        return $cache->getOrSet(
+            self::CACHE_KEY . $this->cacheKeySuffix . $pathOrUrl,
+            function () use ($pathOrUrl, $callback) {
+                $contents = null;
+                $result = null;
+                if (UrlHelper::isAbsoluteUrl($pathOrUrl)) {
+                    // See if we can connect to the server
+                    $clientOptions = [
+                        RequestOptions::HTTP_ERRORS => false,
+                        RequestOptions::CONNECT_TIMEOUT => 3,
+                        RequestOptions::VERIFY => false,
+                        RequestOptions::TIMEOUT => 5,
+                    ];
+                    $client = new Client($clientOptions);
+                    try {
+                        $response = $client->request('GET', $pathOrUrl, [
+                            RequestOptions::HEADERS => [
+                                'User-Agent' => self::USER_AGENT_STRING,
+                                'Accept' => '*/*',
+                            ],
+                        ]);
+                        if ($response->getStatusCode() === 200) {
+                            $contents = $response->getBody()->getContents();
+                        }
+                    } catch (Throwable $e) {
+                        Craft::error($e, __METHOD__);
+                    }
+                } else {
+                    $contents = @file_get_contents($pathOrUrl);
+                }
+                if ($contents) {
+                    $result = $contents;
+                    if ($callback) {
+                        $result = $callback($result);
+                    }
+                }
+
+                return $result;
+            },
+            $cacheDuration,
+            $dependency
+        );
     }
 
     /**
@@ -285,7 +396,7 @@ class ViteService extends Component
         // Check to see if the dev server is actually running by pinging it
         $url = $this->createUrl($this->devServerInternal, self::VITE_CLIENT);
 
-        return !($this->fetchFile($url) === null);
+        return !($this->fetch($url) === null);
     }
 
     /**
@@ -302,6 +413,42 @@ class ViteService extends Component
     // =========================================================================
 
     /**
+     * Inject the error entry point JavaScript for auto-reloading of Twig error
+     * pages
+     */
+    protected function injectErrorEntry()
+    {
+        // If there's no error entry provided, return
+        if (empty($this->errorEntry)) {
+            return;
+        }
+        // If it's not a server error or a client error, return
+        $response = Craft::$app->getResponse();
+        if (!($response->isServerError || $response->isClientError)) {
+            return;
+        }
+        // If the dev server isn't running, return
+        if (!$this->devServerRunning()) {
+            return;
+        }
+        // Inject the errorEntry script tags to enable HMR on this page
+        try {
+            $errorEntry = $this->errorEntry;
+            if (is_string($errorEntry)) {
+                $errorEntry = [$errorEntry];
+            }
+            foreach ($errorEntry as $entry) {
+                $tag = $this->script($entry);
+                if ($tag !== null) {
+                    echo $tag;
+                }
+            }
+        } catch (Throwable $e) {
+            // That's okay, Vite will have already logged the error
+        }
+    }
+
+    /**
      * Return an array of tags from the manifest, for both modern and legacy builds
      *
      * @param string $path
@@ -314,7 +461,7 @@ class ViteService extends Component
     protected function manifestTags(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): array
     {
         // Get the modern tags for this $path
-        $tags = $this->extractManifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs, false);
+        $tags = $this->extractManifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
         // Look for a legacy version of this $path too
         $parts = pathinfo($path);
         $legacyPath = $parts['dirname']
@@ -343,15 +490,16 @@ class ViteService extends Component
      * @param bool $asyncCss
      * @param array $scriptTagAttrs
      * @param array $cssTagAttrs
+     * @param bool $legacy
      *
      * @return array
      */
-    protected function extractManifestTags(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = [], $legacy = false): array
+    protected function extractManifestTags(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = [], bool $legacy = false): array
     {
         $tags = [];
         // Grab the manifest
         $pathOrUrl = (string)Craft::parseEnv($this->manifestPath);
-        $manifest = $this->fetchFile($pathOrUrl, [JsonHelper::class, 'decodeIfJson']);
+        $manifest = $this->fetch($pathOrUrl, [JsonHelper::class, 'decodeIfJson']);
         // If no manifest file is found, bail
         if ($manifest === null) {
             Craft::error('Manifest not found at ' . $this->manifestPath, __METHOD__);
@@ -377,28 +525,37 @@ class ViteService extends Component
             ];
         }
         // Iterate through the manifest
+        /* @var array $manifest */
         foreach ($manifest as $manifestKey => $entry) {
-            if (isset($entry['isEntry']) && $entry['isEntry']) {
-                // Include the entry script
-                if (isset($entry['file']) && strpos($path, $manifestKey) !== false) {
-                    $tags[] = [
-                        'type' => 'file',
-                        'url' => $this->createUrl($this->serverPublic, $entry['file']),
-                        'options' => array_merge($scriptOptions, $scriptTagAttrs)
-                    ];
-                    // Include any CSS tags
-                    $cssFiles = [];
-                    $this->extractCssFiles($manifest, $manifestKey, $cssFiles);
-                    foreach ($cssFiles as $cssFile) {
-                        $tags[] = [
-                            'type' => 'css',
-                            'url' => $this->createUrl($this->serverPublic, $cssFile),
-                            'options' => array_merge([
-                                'rel' => 'stylesheet',
-                            ], $asyncCssOptions, $cssTagAttrs)
-                        ];
-                    }
-                }
+            // If it's not an entry, skip it
+            if (!isset($entry['isEntry']) || !$entry['isEntry']) {
+                continue;
+            }
+            // If there's no file, skip it
+            if (!isset($entry['file'])) {
+                continue;
+            }
+            // If the $path isn't in the $manifestKey, skip it
+            if (strpos($path, $manifestKey) === false) {
+                continue;
+            }
+            // Include the entry script
+            $tags[] = [
+                'type' => 'file',
+                'url' => $this->createUrl($this->serverPublic, $entry['file']),
+                'options' => array_merge($scriptOptions, $scriptTagAttrs)
+            ];
+            // Include any CSS tags
+            $cssFiles = [];
+            $this->extractCssFiles($manifest, $manifestKey, $cssFiles);
+            foreach ($cssFiles as $cssFile) {
+                $tags[] = [
+                    'type' => 'css',
+                    'url' => $this->createUrl($this->serverPublic, $cssFile),
+                    'options' => array_merge([
+                        'rel' => 'stylesheet',
+                    ], $asyncCssOptions, $cssTagAttrs)
+                ];
             }
         }
 
@@ -411,6 +568,8 @@ class ViteService extends Component
      * @param array $manifest
      * @param string $manifestKey
      * @param array $cssFiles
+     *
+     * @return array
      */
     protected function extractCssFiles(array $manifest, string $manifestKey, array &$cssFiles): array
     {
@@ -439,84 +598,5 @@ class ViteService extends Component
     {
         $url = (string)Craft::parseEnv($url);
         return rtrim($url, '/') . '/' . trim($path, '/');
-    }
-
-    /**
-     * Return the contents of a local or remote file, or null
-     *
-     * @param string $pathOrUrl
-     * @param callable|null $callback
-     * @return mixed
-     */
-    protected function fetchFile(string $pathOrUrl, callable $callback = null)
-    {
-        // Create the dependency tags
-        $dependency = new TagDependency([
-            'tags' => [
-                self::CACHE_TAG . $this->cacheKeySuffix,
-                self::CACHE_TAG . $this->cacheKeySuffix . $pathOrUrl,
-            ],
-        ]);
-        // If this is a file path such as for the `manifest.json`, add a FileDependency so it's cache bust if the file changes
-        if (!UrlHelper::isAbsoluteUrl($pathOrUrl)) {
-            $dependency = new ChainedDependency([
-                'dependencies' => [
-                    new FileDependency([
-                        'fileName' => $pathOrUrl
-                    ]),
-                    $dependency
-                ]
-            ]);
-        }
-        // Set the cache duration based on devMode
-        $cacheDuration = Craft::$app->getConfig()->getGeneral()->devMode
-            ? self::DEVMODE_CACHE_DURATION
-            : null;
-        // Get the result from the cache, or parse the file
-        $cache = Craft::$app->getCache();
-        $file = $cache->getOrSet(
-            self::CACHE_KEY . $this->cacheKeySuffix . $pathOrUrl,
-            function () use ($pathOrUrl, $callback) {
-                $contents = null;
-                $result = null;
-                if (UrlHelper::isAbsoluteUrl($pathOrUrl)) {
-                    // See if we can connect to the server
-                    $clientOptions = [
-                        RequestOptions::HTTP_ERRORS => false,
-                        RequestOptions::CONNECT_TIMEOUT => 3,
-                        RequestOptions::VERIFY => false,
-                        RequestOptions::TIMEOUT => 5,
-                    ];
-                    $client = new Client($clientOptions);
-                    try {
-                        $response = $client->request('GET', $pathOrUrl, [
-                            RequestOptions::HEADERS => [
-                                'User-Agent' => self::USER_AGENT_STRING,
-                                'Accept' => '*/*',
-                            ],
-                        ]);
-                        if ($response->getStatusCode() === 200) {
-                            $contents = $response->getBody()->getContents();
-                        }
-                    } catch (\Throwable $e) {
-                        Craft::error($e, __METHOD__);
-                    }
-                } else {
-                    $contents = @file_get_contents($pathOrUrl);
-                }
-                if ($contents) {
-                    $result = $contents;
-                    if ($callback) {
-                        $result = $callback($result);
-                    }
-                }
-
-                return $result;
-            },
-            $cacheDuration,
-            $dependency
-        );
-
-        return $file;
     }
 }

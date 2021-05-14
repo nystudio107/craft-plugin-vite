@@ -10,10 +10,6 @@
 
 namespace nystudio107\pluginvite\variables;
 
-use nystudio107\pluginvite\services\ViteService;
-
-use craft\helpers\Template;
-
 use yii\base\InvalidConfigException;
 
 use Twig\Markup;
@@ -21,18 +17,10 @@ use Twig\Markup;
 /**
  * @author    nystudio107
  * @package   Vite
- * @since     1.0.0
+ * @since     1.0.4
  */
-class ViteVariable
+interface ViteVariableInterface
 {
-    // Public Properties
-    // =========================================================================
-
-    /**
-     * @var ViteService the Vite service
-     */
-    public $viteService;
-
     // Public Methods
     // =========================================================================
 
@@ -47,12 +35,7 @@ class ViteVariable
      *
      * @return Markup
      */
-    public function script(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): Markup
-    {
-        return Template::raw(
-            $this->viteService->script($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs)
-        );
-    }
+    public function script(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): Markup;
 
     /**
      * Register the appropriate tags to the Craft View to load the Vite script, either via the dev server or
@@ -63,13 +46,18 @@ class ViteVariable
      * @param array $scriptTagAttrs
      * @param array $cssTagAttrs
      *
-     * @return string
+     * @return Markup
      * @throws InvalidConfigException
      */
-    public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): string
-    {
-        $this->viteService->register($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
+    public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): Markup;
 
-        return Template::raw('');
-    }
+    /**
+     * Inline the contents of a local file (via path) or remote file (via URL) in your templates.
+     * Yii2 aliases and/or environment variables may be used
+     *
+     * @param string $pathOrUrl
+     *
+     * @return string|null
+     */
+    public function inline(string $pathOrUrl): Markup;
 }
