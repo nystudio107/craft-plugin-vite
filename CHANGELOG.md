@@ -6,6 +6,7 @@
 
 ### Changed
 * Use `registerJsFile()` instead of `registerScript()`
+* Make the cache last for 30 seconds with `devMode` on
 
 ## 1.0.3 - 2021.05.08
 ### Added
