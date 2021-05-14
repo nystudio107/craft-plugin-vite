@@ -303,6 +303,7 @@ class ViteService extends Component
      *
      * @param string $pathOrUrl
      * @param callable|null $callback
+     *
      * @return string|null
      */
     public function fetch(string $pathOrUrl, callable $callback = null)
@@ -415,24 +416,33 @@ class ViteService extends Component
      */
     protected function injectErrorEntry()
     {
+        // If there's no error entry provided, return
+        if (empty($this->errorEntry)) {
+            return;
+        }
+        // If it's not a server error or a client error, return
         $response = Craft::$app->getResponse();
-        if ($response->isServerError || $response->isClientError) {
-            if (!empty($this->errorEntry) && $this->devServerRunning()) {
-                try {
-                    $errorEntry = $this->errorEntry;
-                    if (is_string($errorEntry)) {
-                        $errorEntry = [$errorEntry];
-                    }
-                    foreach ($errorEntry as $entry) {
-                        $tag = $this->script($entry);
-                        if ($tag !== null) {
-                            echo $tag;
-                        }
-                    }
-                } catch (Throwable $e) {
-                    // That's okay, Vite will have already logged the error
+        if (!($response->isServerError || $response->isClientError)) {
+            return;
+        }
+        // If the dev server isn't running, return
+        if (!$this->devServerRunning()) {
+            return;
+        }
+        // Inject the errorEntry script tags to enable HMR on this page
+        try {
+            $errorEntry = $this->errorEntry;
+            if (is_string($errorEntry)) {
+                $errorEntry = [$errorEntry];
+            }
+            foreach ($errorEntry as $entry) {
+                $tag = $this->script($entry);
+                if ($tag !== null) {
+                    echo $tag;
                 }
             }
+        } catch (Throwable $e) {
+            // That's okay, Vite will have already logged the error
         }
     }
 
