@@ -3,6 +3,7 @@
 ## 1.0.4 - UNRELEASED
 ### Added
 * Moved the live reload through Twig errors to the ViteService so that plugins can get it too
+* Added `.fetch()` to allow for fetching of local or remote files, with a caching layer
 
 ### Changed
 * Use `registerJsFile()` instead of `registerScript()`
