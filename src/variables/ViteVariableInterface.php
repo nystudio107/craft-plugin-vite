@@ -52,12 +52,12 @@ interface ViteVariableInterface
     public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): Markup;
 
     /**
-     * Return the contents of a local file (via path) or remote file (via URL),
-     * or null if the file doesn't exist or couldn't be fetched
+     * Inline the contents of a local file (via path) or remote file (via URL) in your templates.
+     * Yii2 aliases and/or environment variables may be used
      *
      * @param string $pathOrUrl
      *
      * @return string|null
      */
-    public function fetch(string $pathOrUrl): Markup;
+    public function inline(string $pathOrUrl): Markup;
 }

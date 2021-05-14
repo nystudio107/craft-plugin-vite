@@ -74,14 +74,14 @@ trait ViteVariableTrait
     }
 
     /**
-     * Return the contents of a local file (via path) or remote file (via URL),
-     * or null if the file doesn't exist or couldn't be fetched
+     * Inline the contents of a local file (via path) or remote file (via URL) in your templates.
+     * Yii2 aliases and/or environment variables may be used
      *
      * @param string $pathOrUrl
      *
      * @return Markup
      */
-    public function fetch(string $pathOrUrl): Markup
+    public function inline(string $pathOrUrl): Markup
     {
         $file = $this->viteService->fetch($pathOrUrl);
         if ($file === null) {
