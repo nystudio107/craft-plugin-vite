@@ -300,6 +300,7 @@ class ViteService extends Component
     /**
      * Return the contents of a local file (via path) or remote file (via URL),
      * or null if the file doesn't exist or couldn't be fetched
+     * Yii2 aliases and/or environment variables may be used
      *
      * @param string $pathOrUrl
      * @param callable|null $callback
@@ -308,6 +309,7 @@ class ViteService extends Component
      */
     public function fetch(string $pathOrUrl, callable $callback = null)
     {
+        $pathOrUrl = (string)Craft::parseEnv($pathOrUrl);
         // Create the dependency tags
         $dependency = new TagDependency([
             'tags' => [
