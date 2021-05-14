@@ -63,13 +63,31 @@ trait ViteVariableTrait
      * @param array $scriptTagAttrs
      * @param array $cssTagAttrs
      *
-     * @return string
+     * @return Markup
      * @throws InvalidConfigException
      */
-    public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): string
+    public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): Markup
     {
         $this->viteService->register($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
 
         return Template::raw('');
+    }
+
+    /**
+     * Return the contents of a local file (via path) or remote file (via URL),
+     * or null if the file doesn't exist or couldn't be fetched
+     *
+     * @param string $pathOrUrl
+     *
+     * @return Markup
+     */
+    public function fetch(string $pathOrUrl): Markup
+    {
+        $file = $this->viteService->fetch($pathOrUrl);
+        if ($file === null) {
+            $file = '';
+        }
+
+        return Template::raw($file);
     }
 }

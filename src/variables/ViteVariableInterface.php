@@ -46,8 +46,18 @@ interface ViteVariableInterface
      * @param array $scriptTagAttrs
      * @param array $cssTagAttrs
      *
-     * @return string
+     * @return Markup
      * @throws InvalidConfigException
      */
-    public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): string;
+    public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): Markup;
+
+    /**
+     * Return the contents of a local file (via path) or remote file (via URL),
+     * or null if the file doesn't exist or couldn't be fetched
+     *
+     * @param string $pathOrUrl
+     *
+     * @return string|null
+     */
+    public function fetch(string $pathOrUrl): Markup;
 }
