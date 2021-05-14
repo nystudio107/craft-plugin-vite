@@ -15,6 +15,7 @@ use craft\base\Component;
 use craft\helpers\Html as HtmlHelper;
 use craft\helpers\Json as JsonHelper;
 use craft\helpers\UrlHelper;
+use craft\web\View;
 
 use yii\base\InvalidConfigException;
 use yii\caching\ChainedDependency;
@@ -71,6 +72,12 @@ class ViteService extends Component
     public $serverPublic;
 
     /**
+     * @var string The JavaScript entry from the manifest.json to inject on Twig error pages
+     *              This can be a string or an array of strings
+     */
+    public $errorEntry = '';
+
+    /**
      * @var string String to be appended to the cache key
      */
     public $cacheKeySuffix = '';
@@ -102,6 +109,23 @@ class ViteService extends Component
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritDoc
+     */
+    public function init()
+    {
+        parent::init();
+        // Do nothing for console requests
+        $request = Craft::$app->getRequest();
+        if ($request->getIsConsoleRequest()) {
+            return;
+        }
+        // delay attaching event handler to the view component after it is fully configured
+        if (Craft::$app->getConfig()->getGeneral()->devMode) {
+            Craft::$app->getView()->on(View::EVENT_END_BODY, [$this, 'injectErrorEntry']);
+        }
+    }
 
     /**
      * Return the appropriate tags to load the Vite script, either via the dev server or
@@ -303,6 +327,33 @@ class ViteService extends Component
 
     // Protected Methods
     // =========================================================================
+
+    /**
+     * Inject the error entry point JavaScript for auto-reloading of Twig error
+     * pages
+     */
+    protected function injectErrorEntry()
+    {
+        $response = Craft::$app->getResponse();
+        if ($response->isServerError || $response->isClientError) {
+            if (!empty($this->errorEntry) && $this->devServerRunning()) {
+                try {
+                    $errorEntry = $this->errorEntry;
+                    if (is_string($errorEntry)) {
+                        $errorEntry = [$errorEntry];
+                    }
+                    foreach ($errorEntry as $entry) {
+                        $tag = $this->script($entry);
+                        if ($tag !== null) {
+                            echo $tag;
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    // That's okay, Vite will have already logged the error
+                }
+            }
+        }
+    }
 
     /**
      * Return an array of tags from the manifest, for both modern and legacy builds
