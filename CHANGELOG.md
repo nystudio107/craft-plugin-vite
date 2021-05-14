@@ -1,6 +1,9 @@
 # Plugin Vite Changelog
 
 ## 1.0.4 - UNRELEASED
+### Added
+* Moved the live reload through Twig errors to the ViteService so that plugins can get it too
+
 ### Changed
 * Use `registerJsFile()` instead of `registerScript()`
 
