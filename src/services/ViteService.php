@@ -121,7 +121,7 @@ class ViteService extends Component
         if ($request->getIsConsoleRequest()) {
             return;
         }
-        // delay attaching event handler to the view component after it is fully configured
+        // Our component is lazily loaded, so the View will be instantiated by now
         if (Craft::$app->getConfig()->getGeneral()->devMode) {
             Craft::$app->getView()->on(View::EVENT_END_BODY, [$this, 'injectErrorEntry']);
         }
