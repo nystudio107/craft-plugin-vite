@@ -29,7 +29,7 @@ class VitePluginService extends ViteService
     // =========================================================================
 
     /**
-     * @var AssetBundle bundle class name to get the published URLs from
+     * @var string AssetBundle class name to get the published URLs from
      */
     public $assetClass;
 
@@ -71,6 +71,8 @@ class VitePluginService extends ViteService
             true
         );
         $this->manifestPath = $this->createUrl($bundle->sourcePath, self::MANIFEST_FILE_NAME);
-        $this->serverPublic = $baseAssetsUrl;
+        if ($baseAssetsUrl !== false) {
+            $this->serverPublic = $baseAssetsUrl;
+        }
     }
 }
