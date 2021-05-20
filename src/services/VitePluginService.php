@@ -10,8 +10,9 @@
 
 namespace nystudio107\pluginvite\services;
 
+use nystudio107\pluginvite\helpers\UrlHelper;
+
 use Craft;
-use craft\web\AssetBundle;
 
 /**
  * @author    nystudio107
@@ -70,7 +71,7 @@ class VitePluginService extends ViteService
             $bundle->sourcePath,
             true
         );
-        $this->manifestPath = $this->createUrl($bundle->sourcePath, self::MANIFEST_FILE_NAME);
+        $this->manifestPath = UrlHelper::createUrl($bundle->sourcePath, self::MANIFEST_FILE_NAME);
         if ($baseAssetsUrl !== false) {
             $this->serverPublic = $baseAssetsUrl;
         }
