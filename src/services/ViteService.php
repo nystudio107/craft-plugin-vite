@@ -305,7 +305,7 @@ class ViteService extends Component
      * @param string $pathOrUrl
      * @param callable|null $callback
      *
-     * @return string|null
+     * @return string|array|null
      */
     public function fetch(string $pathOrUrl, callable $callback = null)
     {
