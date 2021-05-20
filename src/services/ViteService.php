@@ -506,6 +506,8 @@ class ViteService extends Component
 
             return [];
         }
+        // Ensure we're dealing with an array
+        $manifest = (array)$manifest;
         // Set the async CSS args
         $asyncCssOptions = [];
         if ($asyncCss) {
@@ -525,7 +527,6 @@ class ViteService extends Component
             ];
         }
         // Iterate through the manifest
-        /* @var array $manifest */
         foreach ($manifest as $manifestKey => $entry) {
             // If it's not an entry, skip it
             if (!isset($entry['isEntry']) || !$entry['isEntry']) {
