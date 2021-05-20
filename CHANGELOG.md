@@ -1,5 +1,13 @@
 # Plugin Vite Changelog
 
+
+## 1.0.5 - 2021.05.20
+### Changed
+* Refactored the code from a monolithic `ViteService` to helpers, as appropriate
+
+### Fixed
+* Fixed an issue where it was outputting `type="nomodule"` for legacy scripts, when it should have just been `nomodule`
+
 ## 1.0.4 - 2021.05.14
 ### Added
 * Moved the live reload through Twig errors to the ViteService so that plugins can get it too
