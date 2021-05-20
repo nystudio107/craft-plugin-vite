@@ -1,5 +1,6 @@
 # Plugin Vite Changelog
 
+## 1.0.6 - UNRELEASED
 
 ## 1.0.5 - 2021.05.20
 ### Changed
