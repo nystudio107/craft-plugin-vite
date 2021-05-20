@@ -127,7 +127,7 @@ class ManifestHelper
         ];
         if ($legacy) {
             $scriptOptions = [
-                'type' => 'nomodule',
+                'nomodule' => true,
             ];
         }
         // Iterate through the manifest
