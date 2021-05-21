@@ -66,7 +66,7 @@ class VitePluginService extends ViteService
             $this->cacheKeySuffix = $this->assetClass;
         }
         // Map the $manifestPath and $serverPublic to the hashed `/cpresources/` path & URL for our AssetBundle
-        $bundle = new $this->assetClass;
+        $bundle = new $this->assetClass();
         $baseAssetsUrl = Craft::$app->assetManager->getPublishedUrl(
             $bundle->sourcePath,
             true
