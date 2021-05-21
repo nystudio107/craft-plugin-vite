@@ -1,0 +1,14 @@
+{
+  "name": "assets",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "terser src/safari-nomodule-fix.js -c -m -o dist/safari-nomodule-fix.min.js && terser src/react-refresh-shim.js -c -m -o dist/react-refresh-shim.min.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "terser": "^5.7.0"
+  }
+}
