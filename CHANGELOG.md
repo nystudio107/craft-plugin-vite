@@ -1,6 +1,8 @@
 # Plugin Vite Changelog
 
 ## 1.0.6 - UNRELEASED
+### Changed
+* Removed custom user/agent header that was a holdover from `curl`
 
 ## 1.0.5 - 2021.05.20
 ### Changed
