@@ -39,6 +39,8 @@ class FileHelper
 
     const USER_AGENT_STRING = 'User-Agent:Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13';
 
+    const SCRIPTS_DIR = '@vendor/nystudio107/craft-plugin-vite/src/web/assets/dist/';
+
     /**
      * Return the contents of a local file (via path) or remote file (via URL),
      * or null if the file doesn't exist or couldn't be fetched
@@ -119,5 +121,33 @@ class FileHelper
             $cacheDuration,
             $dependency
         );
+    }
+
+    /**
+     * Combine a path with a URL to create a URL
+     *
+     * @param string $url
+     * @param string $path
+     *
+     * @return string
+     */
+    public static function createUrl(string $url, string $path): string
+    {
+        $url = (string)Craft::parseEnv($url);
+        return rtrim($url, '/') . '/' . trim($path, '/');
+    }
+
+    /**
+     * Fetch a script file
+     *
+     * @param string $name
+     * @param string $cacheKeySuffix
+     * @return string
+     */
+    public static function fetchScript(string $name, string $cacheKeySuffix = ''): string
+    {
+        $path = self::createUrl(self::SCRIPTS_DIR, $name);
+
+        return self::fetch($path, null, $cacheKeySuffix) ?? '';
     }
 }

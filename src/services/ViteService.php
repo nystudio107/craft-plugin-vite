@@ -12,7 +12,6 @@ namespace nystudio107\pluginvite\services;
 
 use nystudio107\pluginvite\helpers\FileHelper;
 use nystudio107\pluginvite\helpers\ManifestHelper;
-use nystudio107\pluginvite\helpers\UrlHelper;
 
 use Craft;
 use craft\base\Component;
@@ -37,8 +36,6 @@ class ViteService extends Component
 
     const VITE_CLIENT = '@vite/client.js';
     const LEGACY_POLYFILLS = 'vite/legacy-polyfills';
-
-    const SAFARI_NOMODULE_FIX = '!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()},!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();';
 
     // Public Properties
     // =========================================================================
@@ -146,7 +143,7 @@ class ViteService extends Component
     {
         $lines = [];
         // Include the entry script
-        $url = UrlHelper::createUrl($this->devServerPublic, $path);
+        $url = FileHelper::createUrl($this->devServerPublic, $path);
         $lines[] = HtmlHelper::jsFile($url, array_merge([
             'type' => 'module',
         ], $scriptTagAttrs));
@@ -172,14 +169,17 @@ class ViteService extends Component
         $legacyTags = ManifestHelper::legacyManifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
         // Handle any legacy polyfills
         if (!empty($legacyTags) && !$this->legacyPolyfillIncluded) {
-            $lines[] = HtmlHelper::script(self::SAFARI_NOMODULE_FIX, []);
+            $lines[] = HtmlHelper::script(
+                FileHelper::fetchScript('safari-nomodule-fix.min.js', $this->cacheKeySuffix),
+                []
+            );
             $legacyPolyfillTags = ManifestHelper::extractManifestTags(self::LEGACY_POLYFILLS, $asyncCss, $scriptTagAttrs, $cssTagAttrs, true);
             $tags = array_merge($legacyPolyfillTags, $tags);
             $this->legacyPolyfillIncluded = true;
         }
         foreach(array_merge($tags, $legacyTags) as $tag) {
             if (!empty($tag)) {
-                $url = UrlHelper::createUrl($this->serverPublic, $tag['url']);
+                $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
                 switch ($tag['type']) {
                     case 'file':
                         $lines[] = HtmlHelper::jsFile($url, $tag['options']);
@@ -232,7 +232,7 @@ class ViteService extends Component
     {
         $view = Craft::$app->getView();
         // Include the entry script
-        $url = UrlHelper::createUrl($this->devServerPublic, $path);
+        $url = FileHelper::createUrl($this->devServerPublic, $path);
         $view->registerJsFile(
             $url,
             array_merge(['type' => 'module'], $scriptTagAttrs),
@@ -259,14 +259,19 @@ class ViteService extends Component
         $legacyTags = ManifestHelper::legacyManifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
         // Handle any legacy polyfills
         if (!empty($legacyTags) && !$this->legacyPolyfillIncluded) {
-            $view->registerScript(self::SAFARI_NOMODULE_FIX, $view::POS_HEAD, [], 'SAFARI_NOMODULE_FIX');
+            $view->registerScript(
+                FileHelper::fetchScript('safari-nomodule-fix.min.js', $this->cacheKeySuffix),
+                $view::POS_HEAD,
+                [],
+                'SAFARI_NOMODULE_FIX'
+            );
             $legacyPolyfillTags = ManifestHelper::extractManifestTags(self::LEGACY_POLYFILLS, $asyncCss, $scriptTagAttrs, $cssTagAttrs, true);
             $tags = array_merge($legacyPolyfillTags, $tags);
             $this->legacyPolyfillIncluded = true;
         }
         foreach(array_merge($tags, $legacyTags) as $tag) {
             if (!empty($tag)) {
-                $url = UrlHelper::createUrl($this->serverPublic, $tag['url']);
+                $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
                 switch ($tag['type']) {
                     case 'file':
                         $view->registerJsFile(
@@ -319,7 +324,7 @@ class ViteService extends Component
             return true;
         }
         // Check to see if the dev server is actually running by pinging it
-        $url = UrlHelper::createUrl($this->devServerInternal, self::VITE_CLIENT);
+        $url = FileHelper::createUrl($this->devServerInternal, self::VITE_CLIENT);
 
         return !($this->fetch($url) === null);
     }
