@@ -37,8 +37,6 @@ class FileHelper
 
     const DEVMODE_CACHE_DURATION = 30;
 
-    const USER_AGENT_STRING = 'User-Agent:Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13';
-
     const SCRIPTS_DIR = '@vendor/nystudio107/craft-plugin-vite/src/web/assets/dist/';
 
     /**
@@ -96,7 +94,6 @@ class FileHelper
                     try {
                         $response = $client->request('GET', $pathOrUrl, [
                             RequestOptions::HEADERS => [
-                                'User-Agent' => self::USER_AGENT_STRING,
                                 'Accept' => '*/*',
                             ],
                         ]);
