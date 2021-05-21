@@ -12,7 +12,6 @@ namespace nystudio107\pluginvite\services;
 
 use nystudio107\pluginvite\helpers\FileHelper;
 use nystudio107\pluginvite\helpers\ManifestHelper;
-use nystudio107\pluginvite\helpers\UrlHelper;
 
 use Craft;
 use craft\base\Component;
@@ -37,8 +36,6 @@ class ViteService extends Component
 
     const VITE_CLIENT = '@vite/client.js';
     const LEGACY_POLYFILLS = 'vite/legacy-polyfills';
-
-    const SAFARI_NOMODULE_FIX = '!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()},!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();';
 
     // Public Properties
     // =========================================================================
@@ -86,13 +83,23 @@ class ViteService extends Component
      */
     public $checkDevServer = false;
 
+    /**
+     * @var bool Whether the react-refresh-shim should be included
+     */
+    public $includeReactRefreshShim = false;
+
     // Protected Properties
     // =========================================================================
 
     /**
-     * @var bool Whether the legacy polyfill has been included yet or not
+     * @var bool Whether the manifest shims has been included yet or not
      */
-    protected $legacyPolyfillIncluded = false;
+    protected $manifestShimsIncluded = false;
+
+    /**
+     * @var bool Whether the dev server shims has been included yet or not
+     */
+    protected $devServerShimsIncluded = false;
 
     // Public Methods
     // =========================================================================
@@ -145,8 +152,28 @@ class ViteService extends Component
     public function devServerScript(string $path, array $scriptTagAttrs = []): string
     {
         $lines = [];
+        // Include any dev server shims
+        if (!$this->devServerShimsIncluded) {
+            // Include the react-refresh-shim
+            if ($this->includeReactRefreshShim) {
+                $script = FileHelper::fetchScript('react-refresh-shim.min.js', $this->cacheKeySuffix);
+                // Replace the hard-coded dev server URL with whatever they have theirs set to
+                $script = str_replace(
+                    'http://localhost:3000/',
+                    rtrim($this->devServerPublic, '/').'/',
+                    $script
+                );
+                $lines[] = HtmlHelper::script(
+                    $script,
+                    [
+                        'type' => 'module',
+                    ]
+                );
+            }
+            $this->devServerShimsIncluded = true;
+        }
         // Include the entry script
-        $url = UrlHelper::createUrl($this->devServerPublic, $path);
+        $url = FileHelper::createUrl($this->devServerPublic, $path);
         $lines[] = HtmlHelper::jsFile($url, array_merge([
             'type' => 'module',
         ], $scriptTagAttrs));
@@ -170,16 +197,22 @@ class ViteService extends Component
         ManifestHelper::fetchManifest($this->manifestPath);
         $tags = ManifestHelper::manifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
         $legacyTags = ManifestHelper::legacyManifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
-        // Handle any legacy polyfills
-        if (!empty($legacyTags) && !$this->legacyPolyfillIncluded) {
-            $lines[] = HtmlHelper::script(self::SAFARI_NOMODULE_FIX, []);
-            $legacyPolyfillTags = ManifestHelper::extractManifestTags(self::LEGACY_POLYFILLS, $asyncCss, $scriptTagAttrs, $cssTagAttrs, true);
-            $tags = array_merge($legacyPolyfillTags, $tags);
-            $this->legacyPolyfillIncluded = true;
+        // Include any manifest shims
+        if (!$this->manifestShimsIncluded) {
+            // Handle any legacy polyfills
+            if (!empty($legacyTags)) {
+                $lines[] = HtmlHelper::script(
+                    FileHelper::fetchScript('safari-nomodule-fix.min.js', $this->cacheKeySuffix),
+                    []
+                );
+                $legacyPolyfillTags = ManifestHelper::extractManifestTags(self::LEGACY_POLYFILLS, $asyncCss, $scriptTagAttrs, $cssTagAttrs, true);
+                $tags = array_merge($legacyPolyfillTags, $tags);
+            }
+            $this->manifestShimsIncluded = true;
         }
         foreach(array_merge($tags, $legacyTags) as $tag) {
             if (!empty($tag)) {
-                $url = UrlHelper::createUrl($this->serverPublic, $tag['url']);
+                $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
                 switch ($tag['type']) {
                     case 'file':
                         $lines[] = HtmlHelper::jsFile($url, $tag['options']);
@@ -231,8 +264,30 @@ class ViteService extends Component
     public function devServerRegister(string $path, array $scriptTagAttrs = [])
     {
         $view = Craft::$app->getView();
+        // Include any dev server shims
+        if (!$this->devServerShimsIncluded) {
+            // Include the react-refresh-shim
+            if ($this->includeReactRefreshShim) {
+                $script = FileHelper::fetchScript('react-refresh-shim.min.js', $this->cacheKeySuffix);
+                // Replace the hard-coded dev server URL with whatever they have theirs set to
+                $script = str_replace(
+                    'http://localhost:3000/',
+                    rtrim($this->devServerPublic, '/').'/',
+                    $script
+                );
+                $view->registerScript(
+                    $script,
+                    $view::POS_HEAD,
+                    [
+                        'type' => 'module',
+                    ],
+                    'REACT_REFRESH_SHIM'
+                );
+            }
+            $this->devServerShimsIncluded = true;
+        }
         // Include the entry script
-        $url = UrlHelper::createUrl($this->devServerPublic, $path);
+        $url = FileHelper::createUrl($this->devServerPublic, $path);
         $view->registerJsFile(
             $url,
             array_merge(['type' => 'module'], $scriptTagAttrs),
@@ -257,16 +312,24 @@ class ViteService extends Component
         ManifestHelper::fetchManifest($this->manifestPath);
         $tags = ManifestHelper::manifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
         $legacyTags = ManifestHelper::legacyManifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
-        // Handle any legacy polyfills
-        if (!empty($legacyTags) && !$this->legacyPolyfillIncluded) {
-            $view->registerScript(self::SAFARI_NOMODULE_FIX, $view::POS_HEAD, [], 'SAFARI_NOMODULE_FIX');
-            $legacyPolyfillTags = ManifestHelper::extractManifestTags(self::LEGACY_POLYFILLS, $asyncCss, $scriptTagAttrs, $cssTagAttrs, true);
-            $tags = array_merge($legacyPolyfillTags, $tags);
-            $this->legacyPolyfillIncluded = true;
+        // Include any manifest shims
+        if (!$this->manifestShimsIncluded) {
+            // Handle any legacy polyfills
+            if (!empty($legacyTags)) {
+                $view->registerScript(
+                    FileHelper::fetchScript('safari-nomodule-fix.min.js', $this->cacheKeySuffix),
+                    $view::POS_HEAD,
+                    [],
+                    'SAFARI_NOMODULE_FIX'
+                );
+                $legacyPolyfillTags = ManifestHelper::extractManifestTags(self::LEGACY_POLYFILLS, $asyncCss, $scriptTagAttrs, $cssTagAttrs, true);
+                $tags = array_merge($legacyPolyfillTags, $tags);
+            }
+            $this->manifestShimsIncluded = true;
         }
         foreach(array_merge($tags, $legacyTags) as $tag) {
             if (!empty($tag)) {
-                $url = UrlHelper::createUrl($this->serverPublic, $tag['url']);
+                $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
                 switch ($tag['type']) {
                     case 'file':
                         $view->registerJsFile(
@@ -319,7 +382,7 @@ class ViteService extends Component
             return true;
         }
         // Check to see if the dev server is actually running by pinging it
-        $url = UrlHelper::createUrl($this->devServerInternal, self::VITE_CLIENT);
+        $url = FileHelper::createUrl($this->devServerInternal, self::VITE_CLIENT);
 
         return !($this->fetch($url) === null);
     }
