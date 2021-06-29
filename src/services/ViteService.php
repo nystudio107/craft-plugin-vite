@@ -154,11 +154,6 @@ class ViteService extends Component
         $lines = [];
         // Include any dev server shims
         if (!$this->devServerShimsIncluded) {
-            // Include the dev server client
-            $url = FileHelper::createUrl($this->devServerPublic, self::VITE_CLIENT);
-            $lines[] = HtmlHelper::jsFile($url, array_merge([
-                'type' => 'module',
-            ], $scriptTagAttrs));
             // Include the react-refresh-shim
             if ($this->includeReactRefreshShim) {
                 $script = FileHelper::fetchScript('react-refresh-shim.min.js', $this->cacheKeySuffix);
@@ -271,13 +266,6 @@ class ViteService extends Component
         $view = Craft::$app->getView();
         // Include any dev server shims
         if (!$this->devServerShimsIncluded) {
-            // Include the dev server client
-            $url = FileHelper::createUrl($this->devServerPublic, self::VITE_CLIENT);
-            $view->registerJsFile(
-                $url,
-                array_merge(['type' => 'module'], $scriptTagAttrs),
-                md5($url . JsonHelper::encode($scriptTagAttrs))
-            );
             // Include the react-refresh-shim
             if ($this->includeReactRefreshShim) {
                 $script = FileHelper::fetchScript('react-refresh-shim.min.js', $this->cacheKeySuffix);

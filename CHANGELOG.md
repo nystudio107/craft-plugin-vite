@@ -1,5 +1,9 @@
 # Plugin Vite Changelog
 
+## 1.0.8 - 2021.06.29
+### Changed
+* Roll back the automatic inclusion of `@vite/client.js` (https://github.com/nystudio107/craft-vite/issues/9)
+
 ## 1.0.7 - 2021.06.28
 ### Changed
 * Always include the `@vite/client.js` script if the dev server is running (https://github.com/nystudio107/craft-vite/issues/9)
