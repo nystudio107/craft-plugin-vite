@@ -1,5 +1,9 @@
 # Plugin Vite Changelog
 
+## 1.0.7 - 2021.06.28
+### Changed
+* Always include the `@vite/client.js` script if the dev server is running (https://github.com/nystudio107/craft-vite/issues/9)
+
 ## 1.0.6 - 2021.05.21
 ### Added
 * Added a `includeReactRefreshShim` setting that will automatically include the required [shim for `react-refresh`](https://vitejs.dev/guide/backend-integration.html#backend-integration) when the Vite dev server is running (https://github.com/nystudio107/craft-vite/issues/5)
