@@ -90,4 +90,14 @@ trait ViteVariableTrait
 
         return Template::raw($file);
     }
+
+    /**
+     * Determine whether the Vite dev server is running
+     *
+     * @return bool
+     */
+    public function devServerRunning(): bool
+    {
+        return $this->viteService->devServerRunning();
+    }
 }

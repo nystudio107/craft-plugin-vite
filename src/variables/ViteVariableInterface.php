@@ -60,4 +60,11 @@ interface ViteVariableInterface
      * @return string|null
      */
     public function inline(string $pathOrUrl): Markup;
+
+    /**
+     * Determine whether the Vite dev server is running
+     *
+     * @return bool
+     */
+    public function devServerRunning(): bool;
 }
