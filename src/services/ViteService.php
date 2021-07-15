@@ -34,7 +34,7 @@ class ViteService extends Component
     // Constants
     // =========================================================================
 
-    const VITE_CLIENT = '@vite/client.js';
+    const VITE_CLIENT = '@vite/client';
     const LEGACY_POLYFILLS = 'vite/legacy-polyfills';
 
     // Public Properties
