@@ -1,5 +1,9 @@
 # Plugin Vite Changelog
 
+## 1.0.9 - 2021.07.14
+### Changed
+* Switched the `checkDevServer` test file to `@vite/client` to accommodate with the change in Vite `^2.4.0` to use the `.mjs` extension (https://github.com/nystudio107/craft-vite/issues/11)
+
 ## 1.0.8 - 2021.06.29
 ### Changed
 * Roll back the automatic inclusion of `@vite/client.js` (https://github.com/nystudio107/craft-vite/issues/9)
