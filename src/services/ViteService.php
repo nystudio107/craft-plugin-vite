@@ -210,10 +210,18 @@ class ViteService extends Component
             }
             $this->manifestShimsIncluded = true;
         }
+
         foreach(array_merge($tags, $legacyTags) as $tag) {
             if (!empty($tag)) {
                 $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
                 switch ($tag['type']) {
+	                case 'import':
+		                $lines[] = HtmlHelper::tag('link', '', [
+			                'rel' => 'modulepreload',
+			                'crossorigin' => true,
+			                'href' => $url
+		                ]);
+	                	break;
                     case 'file':
                         $lines[] = HtmlHelper::jsFile($url, $tag['options']);
                         break;
