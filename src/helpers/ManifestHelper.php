@@ -156,9 +156,9 @@ class ManifestHelper
 	        self::extractImportFiles(self::$manifest, $manifestKey, $importFiles);
 	        foreach ($importFiles as $importFile) {
 		        $tags[] = [
+			        'crossorigin' => $tagOptions['crossorigin'] ?? true,
 			        'type' => 'import',
 			        'url' => $importFile,
-			        'crossorigin' => $tagOptions['crossorigin'] ?? true
 		        ];
 	        }
             // Include any CSS tags
