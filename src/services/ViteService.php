@@ -218,8 +218,8 @@ class ViteService extends Component
 	                case 'import':
 		                $lines[] = HtmlHelper::tag('link', '', [
 			                'rel' => 'modulepreload',
-			                'crossorigin' => true,
-			                'href' => $url
+			                'crossorigin' => $tag['crossorigin'],
+			                'href' => $url,
 		                ]);
 	                	break;
                     case 'file':

@@ -145,10 +145,11 @@ class ManifestHelper
                 continue;
             }
             // Include the entry script
+            $tagOptions = array_merge($scriptOptions, $scriptTagAttrs);
             $tags[] = [
                 'type' => 'file',
                 'url' => $entry['file'],
-                'options' => array_merge($scriptOptions, $scriptTagAttrs)
+                'options' => $tagOptions
             ];
             // Include any imports
 	        $importFiles = [];
@@ -157,6 +158,7 @@ class ManifestHelper
 		        $tags[] = [
 			        'type' => 'import',
 			        'url' => $importFile,
+			        'crossorigin' => $tagOptions['crossorigin'] ?? true
 		        ];
 	        }
             // Include any CSS tags
