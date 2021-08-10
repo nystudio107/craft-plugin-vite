@@ -101,6 +101,11 @@ class ViteService extends Component
      */
     protected $devServerShimsIncluded = false;
 
+    /**
+     * @var bool Whether the modulepreload polyfill has been included yet or not
+     */
+    protected $modulepreloadPolyfillIncluded = false;
+
     // Public Methods
     // =========================================================================
 
@@ -210,6 +215,7 @@ class ViteService extends Component
             }
             $this->manifestShimsIncluded = true;
         }
+
         foreach(array_merge($tags, $legacyTags) as $tag) {
             if (!empty($tag)) {
                 $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
@@ -224,6 +230,33 @@ class ViteService extends Component
                         break;
                 }
             }
+        }
+
+        // modulepreload any imports from modern tags
+	    $modulepreloadPolyfillRequired = false;
+	    foreach($tags as $tag) {
+		    if (!empty($tag)) {
+			    $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
+			    switch ($tag['type']) {
+				    case 'import':
+					    $lines[] = HtmlHelper::tag('link', '', [
+						    'crossorigin' => $tag['crossorigin'],
+						    'href' => $url,
+						    'rel' => 'modulepreload',
+					    ]);
+					    $modulepreloadPolyfillRequired = true;
+					    break;
+				    default:
+					    break;
+			    }
+		    }
+	    }
+	    if($modulepreloadPolyfillRequired && ! $this->modulepreloadPolyfillIncluded) {
+	        $this->modulepreloadPolyfillIncluded = true;
+	        $lines[] = HtmlHelper::script(
+		        FileHelper::fetchScript('modulepreload-polyfill.min.js', $this->cacheKeySuffix),
+		        ['type' => 'module']
+	        );
         }
 
         return implode("\r\n", $lines);
@@ -349,6 +382,38 @@ class ViteService extends Component
                 }
             }
         }
+
+	    // modulepreload any imports from modern tags
+	    $modulepreloadPolyfillRequired = false;
+	    foreach($tags as $tag) {
+		    if (!empty($tag)) {
+			    $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
+			    switch ($tag['type']) {
+				    case 'import':
+					    $view->registerLinkTag(
+						    [
+							    'crossorigin' => $tag['crossorigin'],
+							    'href' => $url,
+							    'rel' => 'modulepreload',
+						    ],
+						    md5($url)
+					    );
+					    $modulepreloadPolyfillRequired = true;
+					    break;
+				    default:
+					    break;
+			    }
+		    }
+	    }
+	    if($modulepreloadPolyfillRequired && ! $this->modulepreloadPolyfillIncluded) {
+		    $this->modulepreloadPolyfillIncluded = true;
+		    $view->registerScript(
+			    FileHelper::fetchScript('modulepreload-polyfill.min.js', $this->cacheKeySuffix),
+			    $view::POS_HEAD,
+			    ['type' => 'module'],
+			    'MODULEPRELOAD_POLYFILL'
+		    );
+	    }
     }
 
     /**

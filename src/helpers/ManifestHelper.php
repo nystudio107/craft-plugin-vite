@@ -145,11 +145,22 @@ class ManifestHelper
                 continue;
             }
             // Include the entry script
+            $tagOptions = array_merge($scriptOptions, $scriptTagAttrs);
             $tags[] = [
                 'type' => 'file',
                 'url' => $entry['file'],
-                'options' => array_merge($scriptOptions, $scriptTagAttrs)
+                'options' => $tagOptions
             ];
+            // Include any imports
+	        $importFiles = [];
+	        self::extractImportFiles(self::$manifest, $manifestKey, $importFiles);
+	        foreach ($importFiles as $importFile) {
+		        $tags[] = [
+			        'crossorigin' => $tagOptions['crossorigin'] ?? true,
+			        'type' => 'import',
+			        'url' => $importFile,
+		        ];
+	        }
             // Include any CSS tags
             $cssFiles = [];
             self::extractCssFiles(self::$manifest, $manifestKey, $cssFiles);
@@ -167,7 +178,32 @@ class ManifestHelper
         return $tags;
     }
 
-    /**
+	/**
+	 * Extract any import files from entries recursively
+	 *
+	 * @param array $manifest
+	 * @param string $manifestKey
+	 * @param array $importFiles
+	 *
+	 * @return array
+	 */
+	protected static function extractImportFiles(array $manifest, string $manifestKey, array &$importFiles): array
+	{
+		$entry = $manifest[$manifestKey] ?? null;
+		if (!$entry) {
+			return [];
+		}
+
+		$imports = $entry['imports'] ?? [];
+		foreach($imports as $import) {
+			$importFiles[] = $manifest[$import]['file'];
+			self::extractImportFiles($manifest, $import, $importFiles);
+		}
+
+		return $importFiles;
+	}
+
+	/**
      * Extract any CSS files from entries recursively
      *
      * @param array $manifest
