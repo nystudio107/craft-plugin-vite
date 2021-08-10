@@ -153,13 +153,16 @@ class ManifestHelper
             ];
             // Include any imports
             $importFiles = [];
-            self::extractImportFiles(self::$manifest, $manifestKey, $importFiles);
-            foreach ($importFiles as $importFile) {
-                $tags[] = [
-                    'crossorigin' => $tagOptions['crossorigin'] ?? true,
-                    'type' => 'import',
-                    'url' => $importFile,
-                ];
+            // Only include import tags for the non-legacy scripts
+            if (!$legacy) {
+                self::extractImportFiles(self::$manifest, $manifestKey, $importFiles);
+                foreach ($importFiles as $importFile) {
+                    $tags[] = [
+                        'crossorigin' => $tagOptions['crossorigin'] ?? true,
+                        'type' => 'import',
+                        'url' => $importFile,
+                    ];
+                }
             }
             // Include any CSS tags
             $cssFiles = [];

@@ -226,31 +226,19 @@ class ViteService extends Component
                     case 'css':
                         $lines[] = HtmlHelper::cssFile($url, $tag['options']);
                         break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        // modulepreload any imports from modern tags
-        $modulepreloadPolyfillRequired = false;
-        foreach ($tags as $tag) {
-            if (!empty($tag)) {
-                $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
-                switch ($tag['type']) {
                     case 'import':
                         $lines[] = HtmlHelper::tag('link', '', [
                             'crossorigin' => $tag['crossorigin'],
                             'href' => $url,
                             'rel' => 'modulepreload',
                         ]);
-                        $modulepreloadPolyfillRequired = true;
                         break;
                     default:
                         break;
                 }
             }
         }
+
         if ($modulepreloadPolyfillRequired && !$this->modulepreloadPolyfillIncluded) {
             $this->modulepreloadPolyfillIncluded = true;
             $lines[] = HtmlHelper::script(
@@ -377,18 +365,6 @@ class ViteService extends Component
                             $tag['options']
                         );
                         break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        // modulepreload any imports from modern tags
-        $modulepreloadPolyfillRequired = false;
-        foreach ($tags as $tag) {
-            if (!empty($tag)) {
-                $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
-                switch ($tag['type']) {
                     case 'import':
                         $view->registerLinkTag(
                             [
@@ -398,13 +374,13 @@ class ViteService extends Component
                             ],
                             md5($url)
                         );
-                        $modulepreloadPolyfillRequired = true;
                         break;
                     default:
                         break;
                 }
             }
         }
+
         if ($modulepreloadPolyfillRequired && !$this->modulepreloadPolyfillIncluded) {
             $this->modulepreloadPolyfillIncluded = true;
             $view->registerScript(
