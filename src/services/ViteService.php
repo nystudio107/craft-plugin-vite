@@ -88,6 +88,11 @@ class ViteService extends Component
      */
     public $includeReactRefreshShim = false;
 
+    /**
+     * @var bool Whether the modulepreload-polyfill shim should be included
+     */
+    public $includeModulePreloadShim = true;
+
     // Protected Properties
     // =========================================================================
 
@@ -160,7 +165,7 @@ class ViteService extends Component
                 // Replace the hard-coded dev server URL with whatever they have theirs set to
                 $script = str_replace(
                     'http://localhost:3000/',
-                    rtrim($this->devServerPublic, '/').'/',
+                    rtrim($this->devServerPublic, '/') . '/',
                     $script
                 );
                 $lines[] = HtmlHelper::script(
@@ -199,6 +204,13 @@ class ViteService extends Component
         $legacyTags = ManifestHelper::legacyManifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
         // Include any manifest shims
         if (!$this->manifestShimsIncluded) {
+            // Handle the modulepreload-polyfill shim
+            if ($this->includeModulePreloadShim) {
+                $lines[] = HtmlHelper::script(
+                    FileHelper::fetchScript('modulepreload-polyfill.min.js', $this->cacheKeySuffix),
+                    ['type' => 'module']
+                );
+            }
             // Handle any legacy polyfills
             if (!empty($legacyTags)) {
                 $lines[] = HtmlHelper::script(
@@ -210,21 +222,7 @@ class ViteService extends Component
             }
             $this->manifestShimsIncluded = true;
         }
-        foreach(array_merge($tags, $legacyTags) as $tag) {
-            if (!empty($tag)) {
-                $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
-                switch ($tag['type']) {
-                    case 'file':
-                        $lines[] = HtmlHelper::jsFile($url, $tag['options']);
-                        break;
-                    case 'css':
-                        $lines[] = HtmlHelper::cssFile($url, $tag['options']);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
+        $lines = array_merge($lines, $this->manifestScriptTags($tags, $legacyTags));
 
         return implode("\r\n", $lines);
     }
@@ -272,7 +270,7 @@ class ViteService extends Component
                 // Replace the hard-coded dev server URL with whatever they have theirs set to
                 $script = str_replace(
                     'http://localhost:3000/',
-                    rtrim($this->devServerPublic, '/').'/',
+                    rtrim($this->devServerPublic, '/') . '/',
                     $script
                 );
                 $view->registerScript(
@@ -314,6 +312,15 @@ class ViteService extends Component
         $legacyTags = ManifestHelper::legacyManifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
         // Include any manifest shims
         if (!$this->manifestShimsIncluded) {
+            // Handle the modulepreload-polyfill shim
+            if ($this->includeModulePreloadShim) {
+                $view->registerScript(
+                    FileHelper::fetchScript('modulepreload-polyfill.min.js', $this->cacheKeySuffix),
+                    $view::POS_HEAD,
+                    ['type' => 'module'],
+                    'MODULEPRELOAD_POLYFILL'
+                );
+            }
             // Handle any legacy polyfills
             if (!empty($legacyTags)) {
                 $view->registerScript(
@@ -327,28 +334,7 @@ class ViteService extends Component
             }
             $this->manifestShimsIncluded = true;
         }
-        foreach(array_merge($tags, $legacyTags) as $tag) {
-            if (!empty($tag)) {
-                $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
-                switch ($tag['type']) {
-                    case 'file':
-                        $view->registerJsFile(
-                            $url,
-                            $tag['options'],
-                            md5($url . JsonHelper::encode($tag['options']))
-                        );
-                        break;
-                    case 'css':
-                        $view->registerCssFile(
-                            $url,
-                            $tag['options']
-                        );
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
+        $this->manifestRegisterTags($tags, $legacyTags);
     }
 
     /**
@@ -433,6 +419,87 @@ class ViteService extends Component
             }
         } catch (Throwable $e) {
             // That's okay, Vite will have already logged the error
+        }
+    }
+
+
+    /**
+     * Iterate through all the tags, and return them
+     *
+     * @param array $tags
+     * @param array $legacyTags
+     * @return array
+     */
+    protected function manifestScriptTags(array $tags, array $legacyTags): array
+    {
+        $lines = [];
+        foreach (array_merge($tags, $legacyTags) as $tag) {
+            if (!empty($tag)) {
+                $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
+                switch ($tag['type']) {
+                    case 'file':
+                        $lines[] = HtmlHelper::jsFile($url, $tag['options']);
+                        break;
+                    case 'css':
+                        $lines[] = HtmlHelper::cssFile($url, $tag['options']);
+                        break;
+                    case 'import':
+                        $lines[] = HtmlHelper::tag('link', '', [
+                            'crossorigin' => $tag['crossorigin'],
+                            'href' => $url,
+                            'rel' => 'modulepreload',
+                        ]);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        return $lines;
+    }
+
+    /**
+     * Iterate through all the tags, and register them
+     *
+     * @param array $tags
+     * @param array $legacyTags
+     * @throws InvalidConfigException
+     */
+    protected function manifestRegisterTags(array $tags, array $legacyTags)
+    {
+        $view = Craft::$app->getView();
+        foreach (array_merge($tags, $legacyTags) as $tag) {
+            if (!empty($tag)) {
+                $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
+                switch ($tag['type']) {
+                    case 'file':
+                        $view->registerJsFile(
+                            $url,
+                            $tag['options'],
+                            md5($url . JsonHelper::encode($tag['options']))
+                        );
+                        break;
+                    case 'css':
+                        $view->registerCssFile(
+                            $url,
+                            $tag['options']
+                        );
+                        break;
+                    case 'import':
+                        $view->registerLinkTag(
+                            [
+                                'crossorigin' => $tag['crossorigin'],
+                                'href' => $url,
+                                'rel' => 'modulepreload',
+                            ],
+                            md5($url)
+                        );
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
     }
 }
