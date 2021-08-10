@@ -222,29 +222,7 @@ class ViteService extends Component
             }
             $this->manifestShimsIncluded = true;
         }
-        // Iterate through all the tags, and include them
-        foreach (array_merge($tags, $legacyTags) as $tag) {
-            if (!empty($tag)) {
-                $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
-                switch ($tag['type']) {
-                    case 'file':
-                        $lines[] = HtmlHelper::jsFile($url, $tag['options']);
-                        break;
-                    case 'css':
-                        $lines[] = HtmlHelper::cssFile($url, $tag['options']);
-                        break;
-                    case 'import':
-                        $lines[] = HtmlHelper::tag('link', '', [
-                            'crossorigin' => $tag['crossorigin'],
-                            'href' => $url,
-                            'rel' => 'modulepreload',
-                        ]);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
+        $lines = array_merge($lines, $this->manifestScriptTags($tags, $legacyTags));
 
         return implode("\r\n", $lines);
     }
@@ -356,39 +334,7 @@ class ViteService extends Component
             }
             $this->manifestShimsIncluded = true;
         }
-        // Iterate through all the tags, and include them
-        foreach (array_merge($tags, $legacyTags) as $tag) {
-            if (!empty($tag)) {
-                $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
-                switch ($tag['type']) {
-                    case 'file':
-                        $view->registerJsFile(
-                            $url,
-                            $tag['options'],
-                            md5($url . JsonHelper::encode($tag['options']))
-                        );
-                        break;
-                    case 'css':
-                        $view->registerCssFile(
-                            $url,
-                            $tag['options']
-                        );
-                        break;
-                    case 'import':
-                        $view->registerLinkTag(
-                            [
-                                'crossorigin' => $tag['crossorigin'],
-                                'href' => $url,
-                                'rel' => 'modulepreload',
-                            ],
-                            md5($url)
-                        );
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
+        $this->manifestRegisterTags($tags, $legacyTags);
     }
 
     /**
@@ -473,6 +419,87 @@ class ViteService extends Component
             }
         } catch (Throwable $e) {
             // That's okay, Vite will have already logged the error
+        }
+    }
+
+
+    /**
+     * Iterate through all the tags, and return them
+     *
+     * @param array $tags
+     * @param array $legacyTags
+     * @return array
+     */
+    protected function manifestScriptTags(array $tags, array $legacyTags): array
+    {
+        $lines = [];
+        foreach (array_merge($tags, $legacyTags) as $tag) {
+            if (!empty($tag)) {
+                $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
+                switch ($tag['type']) {
+                    case 'file':
+                        $lines[] = HtmlHelper::jsFile($url, $tag['options']);
+                        break;
+                    case 'css':
+                        $lines[] = HtmlHelper::cssFile($url, $tag['options']);
+                        break;
+                    case 'import':
+                        $lines[] = HtmlHelper::tag('link', '', [
+                            'crossorigin' => $tag['crossorigin'],
+                            'href' => $url,
+                            'rel' => 'modulepreload',
+                        ]);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        return $lines;
+    }
+
+    /**
+     * Iterate through all the tags, and register them
+     *
+     * @param array $tags
+     * @param array $legacyTags
+     * @throws InvalidConfigException
+     */
+    protected function manifestRegisterTags(array $tags, array $legacyTags)
+    {
+        $view = Craft::$app->getView();
+        foreach (array_merge($tags, $legacyTags) as $tag) {
+            if (!empty($tag)) {
+                $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
+                switch ($tag['type']) {
+                    case 'file':
+                        $view->registerJsFile(
+                            $url,
+                            $tag['options'],
+                            md5($url . JsonHelper::encode($tag['options']))
+                        );
+                        break;
+                    case 'css':
+                        $view->registerCssFile(
+                            $url,
+                            $tag['options']
+                        );
+                        break;
+                    case 'import':
+                        $view->registerLinkTag(
+                            [
+                                'crossorigin' => $tag['crossorigin'],
+                                'href' => $url,
+                                'rel' => 'modulepreload',
+                            ],
+                            md5($url)
+                        );
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
     }
 }
