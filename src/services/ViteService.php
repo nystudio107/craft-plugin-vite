@@ -88,6 +88,11 @@ class ViteService extends Component
      */
     public $includeReactRefreshShim = false;
 
+    /**
+     * @var bool Whether the modulepreload-polyfill shim should be included
+     */
+    public $includeModulePreloadShim = true;
+
     // Protected Properties
     // =========================================================================
 
@@ -100,11 +105,6 @@ class ViteService extends Component
      * @var bool Whether the dev server shims has been included yet or not
      */
     protected $devServerShimsIncluded = false;
-
-    /**
-     * @var bool Whether the modulepreload polyfill has been included yet or not
-     */
-    protected $modulepreloadPolyfillIncluded = false;
 
     // Public Methods
     // =========================================================================
@@ -204,6 +204,13 @@ class ViteService extends Component
         $legacyTags = ManifestHelper::legacyManifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
         // Include any manifest shims
         if (!$this->manifestShimsIncluded) {
+            // Handle the modulepreload-polyfill shim
+            if ($this->includeModulePreloadShim) {
+                $lines[] = HtmlHelper::script(
+                    FileHelper::fetchScript('modulepreload-polyfill.min.js', $this->cacheKeySuffix),
+                    ['type' => 'module']
+                );
+            }
             // Handle any legacy polyfills
             if (!empty($legacyTags)) {
                 $lines[] = HtmlHelper::script(
@@ -215,7 +222,7 @@ class ViteService extends Component
             }
             $this->manifestShimsIncluded = true;
         }
-
+        // Iterate through all the tags, and include them
         foreach (array_merge($tags, $legacyTags) as $tag) {
             if (!empty($tag)) {
                 $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
@@ -237,14 +244,6 @@ class ViteService extends Component
                         break;
                 }
             }
-        }
-
-        if ($modulepreloadPolyfillRequired && !$this->modulepreloadPolyfillIncluded) {
-            $this->modulepreloadPolyfillIncluded = true;
-            $lines[] = HtmlHelper::script(
-                FileHelper::fetchScript('modulepreload-polyfill.min.js', $this->cacheKeySuffix),
-                ['type' => 'module']
-            );
         }
 
         return implode("\r\n", $lines);
@@ -335,6 +334,15 @@ class ViteService extends Component
         $legacyTags = ManifestHelper::legacyManifestTags($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
         // Include any manifest shims
         if (!$this->manifestShimsIncluded) {
+            // Handle the modulepreload-polyfill shim
+            if ($this->includeModulePreloadShim) {
+                $view->registerScript(
+                    FileHelper::fetchScript('modulepreload-polyfill.min.js', $this->cacheKeySuffix),
+                    $view::POS_HEAD,
+                    ['type' => 'module'],
+                    'MODULEPRELOAD_POLYFILL'
+                );
+            }
             // Handle any legacy polyfills
             if (!empty($legacyTags)) {
                 $view->registerScript(
@@ -348,6 +356,7 @@ class ViteService extends Component
             }
             $this->manifestShimsIncluded = true;
         }
+        // Iterate through all the tags, and include them
         foreach (array_merge($tags, $legacyTags) as $tag) {
             if (!empty($tag)) {
                 $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
@@ -379,16 +388,6 @@ class ViteService extends Component
                         break;
                 }
             }
-        }
-
-        if ($modulepreloadPolyfillRequired && !$this->modulepreloadPolyfillIncluded) {
-            $this->modulepreloadPolyfillIncluded = true;
-            $view->registerScript(
-                FileHelper::fetchScript('modulepreload-polyfill.min.js', $this->cacheKeySuffix),
-                $view::POS_HEAD,
-                ['type' => 'module'],
-                'MODULEPRELOAD_POLYFILL'
-            );
         }
     }
 
