@@ -339,6 +339,16 @@ class ViteService extends Component
             if (!empty($tag)) {
                 $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
                 switch ($tag['type']) {
+	                case 'import':
+                        $view->registerLinkTag(
+	                        [
+		                        'crossorigin' => $tag['crossorigin'],
+		                        'href' => $url,
+		                        'rel' => 'modulepreload',
+	                        ],
+	                        md5($url)
+                        );
+		                break;
                     case 'file':
                         $view->registerJsFile(
                             $url,
