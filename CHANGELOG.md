@@ -1,5 +1,9 @@
 # Plugin Vite Changelog
 
+## 1.0.12 - 2021.08.19
+### Changed
+* Only do setup in the `VitePluginServce::init()` method for CP requests
+
 ## 1.0.11 - 2021.08.10
 ### Added
 * Added [Preload Directives Generation](https://vitejs.dev/guide/features.html#preload-directives-generation) that will automatically generate `<link rel="modulepreload">` directives for entry chunks and their direct imports ([PR#2](https://github.com/nystudio107/craft-plugin-vite/pull/2))

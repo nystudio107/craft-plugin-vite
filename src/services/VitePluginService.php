@@ -46,9 +46,9 @@ class VitePluginService extends ViteService
     public function init()
     {
         parent::init();
-        // Do nothing for console requests
+        // Only bother if this is a CP request
         $request = Craft::$app->getRequest();
-        if ($request->getIsConsoleRequest()) {
+        if (!$request->getIsCpRequest()) {
             return;
         }
         $this->invalidateCaches();
