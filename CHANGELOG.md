@@ -1,6 +1,6 @@
 # Plugin Vite Changelog
 
-## 1.0.13 - UNRELEASED
+## 1.0.13 - 2021.08.25
 ### Changed
 * Changed the `DEVMODE_CACHE_DURATION` to `1` second ([#3](https://github.com/nystudio107/craft-plugin-vite/issues/3))
 
