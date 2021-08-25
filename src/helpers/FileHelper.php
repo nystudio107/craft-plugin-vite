@@ -35,7 +35,7 @@ class FileHelper
     const CACHE_KEY = 'vite';
     const CACHE_TAG = 'vite';
 
-    const DEVMODE_CACHE_DURATION = 30;
+    const DEVMODE_CACHE_DURATION = 1;
 
     const SCRIPTS_DIR = '@vendor/nystudio107/craft-plugin-vite/src/web/assets/dist/';
 
