@@ -1,5 +1,9 @@
 # Plugin Vite Changelog
 
+## 1.0.14 - 2021.09.18
+### Added
+* Added `craft.vite.asset()` to retrive assets such as images that are imported in JavaScript or CSS
+
 ## 1.0.13 - 2021.08.25
 ### Changed
 * Changed the `DEVMODE_CACHE_DURATION` to `1` second ([#3](https://github.com/nystudio107/craft-plugin-vite/issues/3))

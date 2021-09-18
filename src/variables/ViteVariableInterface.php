@@ -52,6 +52,15 @@ interface ViteVariableInterface
     public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): Markup;
 
     /**
+     * Return the URL for the given asset
+     *
+     * @param string $path
+     *
+     * @return Markup
+     */
+    public function asset(string $path): Markup;
+
+    /**
      * Inline the contents of a local file (via path) or remote file (via URL) in your templates.
      * Yii2 aliases and/or environment variables may be used
      *

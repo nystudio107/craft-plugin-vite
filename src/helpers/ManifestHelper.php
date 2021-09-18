@@ -34,6 +34,11 @@ class ManifestHelper
      */
     protected static $manifest;
 
+    /**
+     * @var array|null
+     */
+    protected static $assetFiles;
+
     // Public Static Methods
     // =========================================================================
 
@@ -180,6 +185,42 @@ class ManifestHelper
 
         return $tags;
     }
+
+    /**
+     * Extract any asset files from all of the entries in the manifest
+     *
+     * @return array
+     */
+    public static function extractAssetFiles(): array
+    {
+        // Used the memoized version if available
+        if (self::$assetFiles !== null) {
+            return self::$assetFiles;
+        }
+        $assetFiles = [];
+        foreach (self::$manifest as $entry) {
+            $assets = $entry['assets'] ?? [];
+            foreach ($assets as $asset) {
+                // Get just the file name
+                $assetKeyParts = explode('/', $asset);
+                $assetKey = end($assetKeyParts);
+                // If there is a version hash, remove it
+                $assetKeyParts = explode('.', $assetKey);
+                $dotSegments = count($assetKeyParts);
+                if ($dotSegments > 2) {
+                    unset($assetKeyParts[$dotSegments - 2]);
+                    $assetKey = implode('.', $assetKeyParts);
+                }
+                $assetFiles[$assetKey] = $asset;
+            }
+        }
+        self::$assetFiles = $assetFiles;
+
+        return $assetFiles;
+    }
+
+    // Protected Static Methods
+    // =========================================================================
 
     /**
      * Extract any import files from entries recursively

@@ -338,6 +338,58 @@ class ViteService extends Component
     }
 
     /**
+     * Return the URL for the given asset
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    public function asset(string $path): string
+    {
+        if ($this->devServerRunning()) {
+            return $this->devServerAsset($path);
+        }
+
+        return $this->manifestAsset($path);
+    }
+
+    /**
+     * Return the URL for the asset from the Vite dev server
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    public function devServerAsset(string $path): string
+    {
+        // Return a URL to the given asset
+        return FileHelper::createUrl($this->devServerPublic, $path);
+    }
+
+    /**
+     * Return the URL for the asset from the manifest.json file
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    public function manifestAsset(string $path): string
+    {
+        ManifestHelper::fetchManifest($this->manifestPath);
+        $assets = ManifestHelper::extractAssetFiles();
+        // Get just the file name
+        $assetKeyParts = explode('/', $path);
+        $assetKey = end($assetKeyParts);
+        foreach($assets as $key => $value) {
+            if ($key === $assetKey) {
+                return FileHelper::createUrl($this->serverPublic, $value);
+            }
+        }
+
+        return '';
+    }
+
+    /**
      * Return the contents of a local file (via path) or remote file (via URL),
      * or null if the file doesn't exist or couldn't be fetched
      * Yii2 aliases and/or environment variables may be used

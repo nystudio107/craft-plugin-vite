@@ -74,6 +74,20 @@ trait ViteVariableTrait
     }
 
     /**
+     * Return the URL for the given asset
+     *
+     * @param string $path
+     *
+     * @return Markup
+     */
+    public function asset(string $path): Markup
+    {
+        return Template::raw(
+            $this->viteService->asset($path)
+        );
+    }
+
+    /**
      * Inline the contents of a local file (via path) or remote file (via URL) in your templates.
      * Yii2 aliases and/or environment variables may be used
      *
