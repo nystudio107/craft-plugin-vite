@@ -151,7 +151,7 @@ class ManifestHelper
             }
             // Include the entry script
             $tagOptions = array_merge($scriptOptions, $scriptTagAttrs);
-            $tags[] = [
+            $tags[$manifestKey] = [
                 'type' => 'file',
                 'url' => $entry['file'],
                 'options' => $tagOptions
@@ -162,7 +162,7 @@ class ManifestHelper
             if (!$legacy) {
                 self::extractImportFiles(self::$manifest, $manifestKey, $importFiles);
                 foreach ($importFiles as $importFile) {
-                    $tags[] = [
+                    $tags[$importFile] = [
                         'crossorigin' => $tagOptions['crossorigin'] ?? true,
                         'type' => 'import',
                         'url' => $importFile,
@@ -173,7 +173,7 @@ class ManifestHelper
             $cssFiles = [];
             self::extractCssFiles(self::$manifest, $manifestKey, $cssFiles);
             foreach ($cssFiles as $cssFile) {
-                $tags[] = [
+                $tags[$cssFile] = [
                     'type' => 'css',
                     'url' => $cssFile,
                     'options' => array_merge([
