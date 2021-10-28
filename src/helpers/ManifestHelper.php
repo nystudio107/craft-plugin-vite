@@ -263,7 +263,7 @@ class ManifestHelper
             return [];
         }
         $cssFiles = array_merge($cssFiles, $entry['css'] ?? []);
-        $imports = array_merge($entry['imports'] ?? [], $entry['dynamicImport'] ?? []);
+        $imports = $entry['imports'] ?? [];
         foreach ($imports as $import) {
             self::extractCssFiles($manifest, $import, $cssFiles);
         }
