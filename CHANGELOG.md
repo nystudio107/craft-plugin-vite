@@ -1,5 +1,9 @@
 # Plugin Vite Changelog
 
+## 1.0.16 - 2021.10.28
+### Changed
+* refactor(manifest): No longer search `dynamicImports` for CSS to extract, since the Vite loader takes care of that for us ([#2](https://github.com/nystudio107/craft-plugin-vite/pull/2))
+
 ## 1.0.15 - 2021.10.21
 ### Fixed
 * Fixed an issue with potentially duplicated `modulepreload` links by adding tags via an associative array ([#16](https://github.com/nystudio107/craft-vite/issues/16))
