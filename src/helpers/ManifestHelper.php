@@ -146,7 +146,7 @@ class ManifestHelper
                 continue;
             }
             // If the $path isn't in the $manifestKey, skip it
-            if (strpos($path, $manifestKey) === false) {
+            if (strpos($manifestKey, $path) === false) {
                 continue;
             }
             // Include the entry script
@@ -263,7 +263,7 @@ class ManifestHelper
             return [];
         }
         $cssFiles = array_merge($cssFiles, $entry['css'] ?? []);
-        $imports = array_merge($entry['imports'] ?? [], $entry['dynamicImport'] ?? []);
+        $imports = $entry['imports'] ?? [];
         foreach ($imports as $import) {
             self::extractCssFiles($manifest, $import, $cssFiles);
         }

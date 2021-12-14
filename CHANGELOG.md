@@ -1,5 +1,13 @@
 # Plugin Vite Changelog
 
+## 1.0.17 - 2021.12.14
+### Fixed
+* Fixed an issue where the needle/haystack logic was reversed in `strpos()` which could cause it to not match properly in some setups ([#5](https://github.com/nystudio107/craft-plugin-vite/pull/5))
+
+## 1.0.16 - 2021.10.28
+### Changed
+* refactor(manifest): No longer search `dynamicImports` for CSS to extract, since the Vite loader takes care of that for us ([#2](https://github.com/nystudio107/craft-plugin-vite/pull/2))
+
 ## 1.0.15 - 2021.10.21
 ### Fixed
 * Fixed an issue with potentially duplicated `modulepreload` links by adding tags via an associative array ([#16](https://github.com/nystudio107/craft-vite/issues/16))
