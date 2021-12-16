@@ -74,6 +74,20 @@ trait ViteVariableTrait
     }
 
     /**
+     * Return the URL for the given entry
+     *
+     * @param string $path
+     *
+     * @return Markup
+     */
+    public function entry(string $path): Markup
+    {
+        return Template::raw(
+            $this->viteService->entry($path)
+        );
+    }
+
+    /**
      * Return the URL for the given asset
      *
      * @param string $path

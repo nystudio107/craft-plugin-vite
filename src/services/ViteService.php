@@ -338,6 +338,21 @@ class ViteService extends Component
     }
 
     /**
+     * Return the URL for the given entry
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    public function entry(string $path): string
+    {
+        ManifestHelper::fetchManifest($this->manifestPath);
+        $entry = ManifestHelper::extractEntry($path);
+
+        return FileHelper::createUrl($this->serverPublic, $entry);
+    }
+
+    /**
      * Return the URL for the given asset
      *
      * @param string $path

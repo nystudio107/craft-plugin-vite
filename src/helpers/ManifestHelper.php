@@ -187,6 +187,38 @@ class ManifestHelper
     }
 
     /**
+     * Extract an entry file URL from all of the entries in the manifest
+     *
+     * @return string
+     */
+    public static function extractEntry(string $path): string
+    {
+        foreach (self::$manifest as $entryKey => $entry) {
+            if (strpos($entryKey, $path) !== false) {
+                return $entry['file'] ?? '';
+            }
+            // Check CSS
+            $styles = $entry['css'] ?? [];
+            foreach ($styles as $style) {
+                $styleKey = self::filenameWithoutHash($style);
+                if (strpos($styleKey, $path) !== false) {
+                    return $style;
+                }
+            }
+            // Check assets
+            $assets = $entry['assets'] ?? [];
+            foreach ($assets as $asset) {
+                $assetKey = self::filenameWithoutHash($asset);
+                if (strpos($assetKey, $path) !== false) {
+                    return $asset;
+                    }
+                }
+            }
+
+        return '';
+    }
+
+    /**
      * Extract any asset files from all of the entries in the manifest
      *
      * @return array
@@ -201,16 +233,7 @@ class ManifestHelper
         foreach (self::$manifest as $entry) {
             $assets = $entry['assets'] ?? [];
             foreach ($assets as $asset) {
-                // Get just the file name
-                $assetKeyParts = explode('/', $asset);
-                $assetKey = end($assetKeyParts);
-                // If there is a version hash, remove it
-                $assetKeyParts = explode('.', $assetKey);
-                $dotSegments = count($assetKeyParts);
-                if ($dotSegments > 2) {
-                    unset($assetKeyParts[$dotSegments - 2]);
-                    $assetKey = implode('.', $assetKeyParts);
-                }
+                $assetKey = self::filenameWithoutHash($asset);
                 $assetFiles[$assetKey] = $asset;
             }
         }
@@ -221,6 +244,28 @@ class ManifestHelper
 
     // Protected Static Methods
     // =========================================================================
+
+    /**
+     * Return a file name from the passed in $path, with any version hash removed from it
+     *
+     * @param string $path
+     * @return string
+     */
+    protected static function filenameWithoutHash(string $path): string
+    {
+        // Get just the file name
+        $filenameParts = explode('/', $path);
+        $filename = end($filenameParts);
+        // If there is a version hash, remove it
+        $filenameParts = explode('.', $filename);
+        $dotSegments = count($filenameParts);
+        if ($dotSegments > 2) {
+            unset($filenameParts[$dotSegments - 2]);
+            $filename = implode('.', $filenameParts);
+        }
+
+        return (string)$filename;
+    }
 
     /**
      * Extract any import files from entries recursively

@@ -52,6 +52,15 @@ interface ViteVariableInterface
     public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): Markup;
 
     /**
+     * Return the URL for the given entry
+     *
+     * @param string $path
+     *
+     * @return Markup
+     */
+    public function entry(string $path): Markup;
+
+    /**
      * Return the URL for the given asset
      *
      * @param string $path
