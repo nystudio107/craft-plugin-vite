@@ -145,8 +145,8 @@ class ManifestHelper
             if (!isset($entry['file'])) {
                 continue;
             }
-            // If the $path isn't in the $manifestKey, skip it
-            if (strpos($manifestKey, $path) === false) {
+            // If the $path isn't in the $manifestKey, and vice versus, skip it
+            if (strpos($manifestKey, $path) === false && strpos($path, $manifestKey) === false) {
                 continue;
             }
             // Include the entry script
