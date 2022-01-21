@@ -1,5 +1,11 @@
 # Plugin Vite Changelog
 
+## 1.0.22 - 2022.01.21
+
+### Fixed
+
+* Removed errant debugging code
+
 ## 1.0.21 - 2022.01.20
 
 ### Added
