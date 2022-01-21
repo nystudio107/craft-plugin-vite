@@ -541,7 +541,6 @@ class ViteService extends Component
     protected function manifestScriptTags(array $tags, array $legacyTags): array
     {
         $lines = [];
-        Craft::dd($tags);
         foreach (array_merge($tags, $legacyTags) as $tag) {
             if (!empty($tag)) {
                 $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
