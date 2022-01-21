@@ -126,10 +126,22 @@ class ManifestHelper
             if (strpos($manifestKey, $path) === false && strpos($path, $manifestKey) === false) {
                 continue;
             }
+            // Handle optional `integrity` tags
+            $integrityAttributes = [];
+            if (isset($entry['integrity'])) {
+                $integrityAttributes = [
+                    'integrity' => $entry['integrity'],
+                ];
+            }
             // Add an onload event so listeners can know when the event has fired
-            $tagOptions = array_merge($scriptOptions, $scriptTagAttrs, [
-                'onload' => "e=new CustomEvent('vite-script-loaded', {detail:{path: '$manifestKey'}});document.dispatchEvent(e);"
-            ]);
+            $tagOptions = array_merge(
+                $scriptOptions,
+                [
+                    'onload' => "e=new CustomEvent('vite-script-loaded', {detail:{path: '$manifestKey'}});document.dispatchEvent(e);"
+                ],
+                $integrityAttributes,
+                $scriptTagAttrs
+            );
             // Include the entry script
             $tags[$manifestKey] = [
                 'type' => 'file',
@@ -141,11 +153,12 @@ class ManifestHelper
             // Only include import tags for the non-legacy scripts
             if (!$legacy) {
                 self::extractImportFiles(self::$manifest, $manifestKey, $importFiles);
-                foreach ($importFiles as $importFile) {
+                foreach ($importFiles as $importKey => $importFile) {
                     $tags[$importFile] = [
                         'crossorigin' => $tagOptions['crossorigin'] ?? true,
                         'type' => 'import',
                         'url' => $importFile,
+                        'integrity' => self::$manifest[$importKey]['integrity'] ?? '',
                     ];
                 }
             }
@@ -184,7 +197,7 @@ class ManifestHelper
 
         $imports = $entry['imports'] ?? [];
         foreach ($imports as $import) {
-            $importFiles[] = $manifest[$import]['file'];
+            $importFiles[$import] = $manifest[$import]['file'];
             self::extractImportFiles($manifest, $import, $importFiles);
         }
 

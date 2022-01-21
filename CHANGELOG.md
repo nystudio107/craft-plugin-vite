@@ -1,5 +1,12 @@
 # Plugin Vite Changelog
 
+## 1.0.21 - 2022.01.20
+
+### Added
+
+* Added support for [subresource integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity)
+  via plugins like [vite-plugin-manifest-sri](https://github.com/ElMassimo/vite-plugin-manifest-sri)
+
 ## 1.0.20 - 2022.01.17
 
 ### Added
