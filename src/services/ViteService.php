@@ -31,8 +31,8 @@ class ViteService extends Component
     // Constants
     // =========================================================================
 
-    const VITE_CLIENT = '@vite/client';
-    const LEGACY_POLYFILLS = 'vite/legacy-polyfills';
+    protected const VITE_CLIENT = '@vite/client';
+    protected const LEGACY_POLYFILLS = 'vite/legacy-polyfills';
 
     // Public Properties
     // =========================================================================
@@ -40,55 +40,55 @@ class ViteService extends Component
     /**
      * @var bool Should the dev server be used for?
      */
-    public $useDevServer;
+    public bool $useDevServer = false;
 
     /**
      * @var string File system path (or URL) to the Vite-built manifest.json
      */
-    public $manifestPath;
+    public string $manifestPath = '';
 
     /**
      * @var string The public URL to the dev server (what appears in `<script src="">` tags
      */
-    public $devServerPublic;
+    public string $devServerPublic = '';
 
     /**
      * @var string The public URL to use when not using the dev server
      */
-    public $serverPublic;
+    public string $serverPublic = '';
 
     /**
      * @var string The JavaScript entry from the manifest.json to inject on Twig error pages
      *              This can be a string or an array of strings
      */
-    public $errorEntry = '';
+    public string $errorEntry = '';
 
     /**
      * @var string String to be appended to the cache key
      */
-    public $cacheKeySuffix = '';
+    public string $cacheKeySuffix = '';
 
     /**
      * @var string The internal URL to the dev server, when accessed from the environment in which PHP is executing
      *              This can be the same as `$devServerPublic`, but may be different in containerized or VM setups.
      *              ONLY used if $checkDevServer = true
      */
-    public $devServerInternal;
+    public string $devServerInternal = '';
 
     /**
      * @var bool Should we check for the presence of the dev server by pinging $devServerInternal to make sure it's running?
      */
-    public $checkDevServer = false;
+    public bool $checkDevServer = false;
 
     /**
      * @var bool Whether the react-refresh-shim should be included
      */
-    public $includeReactRefreshShim = false;
+    public bool $includeReactRefreshShim = false;
 
     /**
      * @var bool Whether the modulepreload-polyfill shim should be included
      */
-    public $includeModulePreloadShim = true;
+    public bool $includeModulePreloadShim = true;
 
     // Protected Properties
     // =========================================================================
@@ -96,12 +96,12 @@ class ViteService extends Component
     /**
      * @var bool Whether the manifest shims has been included yet or not
      */
-    protected $manifestShimsIncluded = false;
+    protected bool $manifestShimsIncluded = false;
 
     /**
      * @var bool Whether the dev server shims has been included yet or not
      */
-    protected $devServerShimsIncluded = false;
+    protected bool $devServerShimsIncluded = false;
 
     // Public Methods
     // =========================================================================
@@ -109,7 +109,7 @@ class ViteService extends Component
     /**
      * @inheritDoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         // Do nothing for console requests
@@ -135,7 +135,7 @@ class ViteService extends Component
      * @return void
      * @throws InvalidConfigException
      */
-    public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = [])
+    public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): void
     {
         if ($this->devServerRunning()) {
             $this->devServerRegister($path, $scriptTagAttrs);
@@ -177,7 +177,7 @@ class ViteService extends Component
      *
      * @return string|array|null
      */
-    public function fetch(string $pathOrUrl, callable $callback = null)
+    public function fetch(string $pathOrUrl, callable $callback = null): string|array|null
     {
         return FileHelper::fetch($pathOrUrl, $callback, $this->cacheKeySuffix);
     }
@@ -191,7 +191,7 @@ class ViteService extends Component
      * @return void
      * @throws InvalidConfigException
      */
-    public function devServerRegister(string $path, array $scriptTagAttrs = [])
+    public function devServerRegister(string $path, array $scriptTagAttrs = []): void
     {
         $view = Craft::$app->getView();
         // Include any dev server shims
@@ -236,7 +236,7 @@ class ViteService extends Component
      * @return void
      * @throws InvalidConfigException
      */
-    public function manifestRegister(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = [])
+    public function manifestRegister(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): void
     {
         $view = Craft::$app->getView();
         ManifestHelper::fetchManifest($this->manifestPath);
@@ -276,7 +276,7 @@ class ViteService extends Component
      * @param array $legacyTags
      * @throws InvalidConfigException
      */
-    protected function manifestRegisterTags(array $tags, array $legacyTags)
+    protected function manifestRegisterTags(array $tags, array $legacyTags): void
     {
         $view = Craft::$app->getView();
         foreach (array_merge($tags, $legacyTags) as $tag) {
@@ -384,7 +384,7 @@ class ViteService extends Component
     /**
      * Invalidate all of the Vite caches
      */
-    public function invalidateCaches()
+    public function invalidateCaches(): void
     {
         $cache = Craft::$app->getCache();
         TagDependency::invalidate($cache, FileHelper::CACHE_TAG . $this->cacheKeySuffix);
@@ -395,7 +395,7 @@ class ViteService extends Component
      * Inject the error entry point JavaScript for auto-reloading of Twig error
      * pages
      */
-    protected function injectErrorEntry()
+    protected function injectErrorEntry(): void
     {
         // If there's no error entry provided, return
         if (empty($this->errorEntry)) {

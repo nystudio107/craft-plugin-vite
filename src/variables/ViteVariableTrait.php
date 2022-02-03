@@ -10,13 +10,10 @@
 
 namespace nystudio107\pluginvite\variables;
 
-use nystudio107\pluginvite\services\ViteService;
-
 use craft\helpers\Template;
-
-use yii\base\InvalidConfigException;
-
+use nystudio107\pluginvite\services\ViteService;
 use Twig\Markup;
+use yii\base\InvalidConfigException;
 
 /**
  * @author    nystudio107
@@ -29,9 +26,9 @@ trait ViteVariableTrait
     // =========================================================================
 
     /**
-     * @var ViteService the Vite service
+     * @var null|ViteService the Vite service
      */
-    public $viteService;
+    public ?ViteService $viteService = null;
 
     // Public Methods
     // =========================================================================

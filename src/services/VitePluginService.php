@@ -10,9 +10,8 @@
 
 namespace nystudio107\pluginvite\services;
 
-use nystudio107\pluginvite\helpers\FileHelper;
-
 use Craft;
+use nystudio107\pluginvite\helpers\FileHelper;
 
 /**
  * @author    nystudio107
@@ -24,7 +23,7 @@ class VitePluginService extends ViteService
     // Constants
     // =========================================================================
 
-    const MANIFEST_FILE_NAME = 'manifest.json';
+    protected const MANIFEST_FILE_NAME = 'manifest.json';
 
     // Public Properties
     // =========================================================================
@@ -32,18 +31,18 @@ class VitePluginService extends ViteService
     /**
      * @var string AssetBundle class name to get the published URLs from
      */
-    public $assetClass;
+    public string $assetClass = '';
 
     /**
      * @var string The environment variable to look for in order to enable the devServer; the value doesn't matter,
      *              it just needs to exist
      */
-    public $pluginDevServerEnvVar = 'VITE_PLUGIN_DEVSERVER';
+    public string $pluginDevServerEnvVar = 'VITE_PLUGIN_DEVSERVER';
 
     /**
      * @inheritDoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         // Only bother if this is a CP request
