@@ -1,5 +1,11 @@
 # Plugin Vite Changelog
 
+## 4.0.0-beta.1 - 2022.02.07
+
+### Added
+
+* Initial Craft CMS 4 compatibility
+
 ## 1.0.22 - 2022.01.21
 
 ### Fixed
