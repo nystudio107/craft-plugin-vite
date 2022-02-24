@@ -58,10 +58,10 @@ class ViteService extends Component
     public string $serverPublic = '';
 
     /**
-     * @var string The JavaScript entry from the manifest.json to inject on Twig error pages
+     * @var array|string The JavaScript entry from the manifest.json to inject on Twig error pages
      *              This can be a string or an array of strings
      */
-    public string $errorEntry = '';
+    public array|string $errorEntry = '';
 
     /**
      * @var string String to be appended to the cache key
@@ -270,51 +270,6 @@ class ViteService extends Component
     }
 
     /**
-     * Iterate through all the tags, and register them
-     *
-     * @param array $tags
-     * @param array $legacyTags
-     * @throws InvalidConfigException
-     */
-    protected function manifestRegisterTags(array $tags, array $legacyTags): void
-    {
-        $view = Craft::$app->getView();
-        foreach (array_merge($tags, $legacyTags) as $tag) {
-            if (!empty($tag)) {
-                $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
-                switch ($tag['type']) {
-                    case 'file':
-                        $view->registerJsFile(
-                            $url,
-                            $tag['options'],
-                            md5($url . JsonHelper::encode($tag['options']))
-                        );
-                        break;
-                    case 'css':
-                        $view->registerCssFile(
-                            $url,
-                            $tag['options']
-                        );
-                        break;
-                    case 'import':
-                        $view->registerLinkTag(
-                            array_filter([
-                                'crossorigin' => $tag['crossorigin'],
-                                'href' => $url,
-                                'rel' => 'modulepreload',
-                                'integrity' => $tag['integrity'] ?? '',
-                            ]),
-                            md5($url)
-                        );
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-    }
-
-    /**
      * Return the URL for the given entry
      *
      * @param string $path
@@ -392,42 +347,6 @@ class ViteService extends Component
     }
 
     /**
-     * Inject the error entry point JavaScript for auto-reloading of Twig error
-     * pages
-     */
-    protected function injectErrorEntry(): void
-    {
-        // If there's no error entry provided, return
-        if (empty($this->errorEntry)) {
-            return;
-        }
-        // If it's not a server error or a client error, return
-        $response = Craft::$app->getResponse();
-        if (!($response->isServerError || $response->isClientError)) {
-            return;
-        }
-        // If the dev server isn't running, return
-        if (!$this->devServerRunning()) {
-            return;
-        }
-        // Inject the errorEntry script tags to enable HMR on this page
-        try {
-            $errorEntry = $this->errorEntry;
-            if (is_string($errorEntry)) {
-                $errorEntry = [$errorEntry];
-            }
-            foreach ($errorEntry as $entry) {
-                $tag = $this->script($entry);
-                if ($tag !== null) {
-                    echo $tag;
-                }
-            }
-        } catch (Throwable $e) {
-            // That's okay, Vite will have already logged the error
-        }
-    }
-
-    /**
      * Return the appropriate tags to load the Vite script, either via the dev server or
      * extracting it from the manifest.json file
      *
@@ -446,9 +365,6 @@ class ViteService extends Component
 
         return $this->manifestScript($path, $asyncCss, $scriptTagAttrs, $cssTagAttrs);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Return the script tag to load the script from the Vite dev server
@@ -529,6 +445,90 @@ class ViteService extends Component
         $lines = array_merge($lines, $this->manifestScriptTags($tags, $legacyTags));
 
         return implode("\r\n", $lines);
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * Iterate through all the tags, and register them
+     *
+     * @param array $tags
+     * @param array $legacyTags
+     * @throws InvalidConfigException
+     */
+    protected function manifestRegisterTags(array $tags, array $legacyTags): void
+    {
+        $view = Craft::$app->getView();
+        foreach (array_merge($tags, $legacyTags) as $tag) {
+            if (!empty($tag)) {
+                $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
+                switch ($tag['type']) {
+                    case 'file':
+                        $view->registerJsFile(
+                            $url,
+                            $tag['options'],
+                            md5($url . JsonHelper::encode($tag['options']))
+                        );
+                        break;
+                    case 'css':
+                        $view->registerCssFile(
+                            $url,
+                            $tag['options']
+                        );
+                        break;
+                    case 'import':
+                        $view->registerLinkTag(
+                            array_filter([
+                                'crossorigin' => $tag['crossorigin'],
+                                'href' => $url,
+                                'rel' => 'modulepreload',
+                                'integrity' => $tag['integrity'] ?? '',
+                            ]),
+                            md5($url)
+                        );
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Inject the error entry point JavaScript for auto-reloading of Twig error
+     * pages
+     */
+    protected function injectErrorEntry(): void
+    {
+        // If there's no error entry provided, return
+        if (empty($this->errorEntry)) {
+            return;
+        }
+        // If it's not a server error or a client error, return
+        $response = Craft::$app->getResponse();
+        if (!($response->isServerError || $response->isClientError)) {
+            return;
+        }
+        // If the dev server isn't running, return
+        if (!$this->devServerRunning()) {
+            return;
+        }
+        // Inject the errorEntry script tags to enable HMR on this page
+        try {
+            $errorEntry = $this->errorEntry;
+            if (is_string($errorEntry)) {
+                $errorEntry = [$errorEntry];
+            }
+            foreach ($errorEntry as $entry) {
+                $tag = $this->script($entry);
+                if ($tag !== null) {
+                    echo $tag;
+                }
+            }
+        } catch (Throwable $e) {
+            // That's okay, Vite will have already logged the error
+        }
     }
 
     /**
