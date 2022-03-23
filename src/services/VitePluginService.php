@@ -50,19 +50,21 @@ class VitePluginService extends ViteService
         if (!$request->getIsCpRequest()) {
             return;
         }
-        $this->invalidateCaches();
         // See if the $pluginDevServerEnvVar env var exists, and if not, don't run off of the dev server
         $useDevServer = getenv($this->pluginDevServerEnvVar);
         if ($useDevServer === false) {
             $this->useDevServer = false;
         }
-        // If we have no asset bundle class, or the dev server is running, don't swap in our `/cpresources/` paths
-        if (!$this->assetClass || $this->devServerRunning()) {
-            return;
-        }
         // If we're in a plugin, make sure the caches are unique
         if ($this->assetClass) {
             $this->cacheKeySuffix = $this->assetClass;
+        }
+        if ($this->devServerRunning()) {
+            $this->invalidateCaches();
+        }
+        // If we have no asset bundle class, or the dev server is running, don't swap in our `/cpresources/` paths
+        if (!$this->assetClass || $this->devServerRunning()) {
+            return;
         }
         // Map the $manifestPath and $serverPublic to the hashed `/cpresources/` path & URL for our AssetBundle
         $bundle = new $this->assetClass();
