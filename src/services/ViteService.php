@@ -103,6 +103,11 @@ class ViteService extends Component
      */
     protected bool $devServerShimsIncluded = false;
 
+    /**
+     * @var bool Cached status of whether the devServer is running or not
+     */
+    protected ?bool $devServerRunningCached = null;
+
     // Public Methods
     // =========================================================================
 
@@ -153,6 +158,9 @@ class ViteService extends Component
      */
     public function devServerRunning(): bool
     {
+        if ($this->devServerRunningCached !== null) {
+            return $this->devServerRunningCached;
+        }
         // If the dev server is turned off via config, say it's not running
         if (!$this->useDevServer) {
             return false;
@@ -163,8 +171,9 @@ class ViteService extends Component
         }
         // Check to see if the dev server is actually running by pinging it
         $url = FileHelper::createUrl($this->devServerInternal, self::VITE_CLIENT);
+        $this->devServerRunningCached = !($this->fetch($url) === null);
 
-        return !($this->fetch($url) === null);
+        return $this->devServerRunningCached;
     }
 
     /**
