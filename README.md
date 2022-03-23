@@ -10,7 +10,7 @@ Related Articles:
 
 ## Requirements
 
-* Craft CMS 3.0.0 or later
+* Craft CMS 4.0.0 or later
 
 ## Installation
 
