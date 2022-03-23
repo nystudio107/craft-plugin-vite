@@ -1,5 +1,12 @@
 # Plugin Vite Changelog
 
+## 1.0.23 - 2022.03.22
+
+### Changed
+
+* Only clear caches in `init()` if we're using the dev server
+* Cache the status of the devServer for the duration of the request
+
 ## 1.0.22 - 2022.01.21
 
 ### Fixed
