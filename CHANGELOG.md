@@ -1,9 +1,11 @@
 # Plugin Vite Changelog
 
-## 1.0.23 - 2022.03.22
-
+## 1.0.24 - 2022.04.26
 ### Changed
+* Don't log the full exception on a Guzzle error, just log the message
 
+## 1.0.23 - 2022.03.22
+### Changed
 * Only clear caches in `init()` if we're using the dev server
 * Cache the status of the devServer for the duration of the request
 
