@@ -12,15 +12,12 @@ namespace nystudio107\pluginvite\helpers;
 
 use Craft;
 use craft\helpers\UrlHelper;
-
+use GuzzleHttp\Client;
+use GuzzleHttp\RequestOptions;
+use Throwable;
 use yii\caching\ChainedDependency;
 use yii\caching\FileDependency;
 use yii\caching\TagDependency;
-
-use GuzzleHttp\Client;
-use GuzzleHttp\RequestOptions;
-
-use Throwable;
 
 /**
  * @author    nystudio107
@@ -101,7 +98,7 @@ class FileHelper
                             $contents = $response->getBody()->getContents();
                         }
                     } catch (Throwable $e) {
-                        Craft::error($e, __METHOD__);
+                        Craft::error($e->getMessage(), __METHOD__);
                     }
                 } else {
                     $contents = @file_get_contents($pathOrUrl);
