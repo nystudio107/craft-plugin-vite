@@ -32,6 +32,7 @@ class ViteService extends Component
     // =========================================================================
 
     const VITE_CLIENT = '@vite/client';
+    const VITE_DEVSERVER_PING = '__vite_ping';
     const LEGACY_POLYFILLS = 'vite/legacy-polyfills';
 
     // Public Properties
@@ -170,7 +171,7 @@ class ViteService extends Component
             return true;
         }
         // Check to see if the dev server is actually running by pinging it
-        $url = FileHelper::createUrl($this->devServerInternal, self::VITE_CLIENT);
+        $url = FileHelper::createUrl($this->devServerInternal, self::VITE_DEVSERVER_PING);
         $this->devServerRunningCached = !($this->fetch($url) === null);
 
         return $this->devServerRunningCached;
