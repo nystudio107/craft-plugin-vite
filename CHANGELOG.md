@@ -1,5 +1,9 @@
 # Plugin Vite Changelog
 
+## 4.0.1 - 2022.05.15
+### Fixed
+* Fixed an issue where the plugin couldn't detect the Vite dev server by testing `__vite_ping` instead of `@vite/client` to determine whether the dev server is running or not ([#33](https://github.com/nystudio107/craft-vite/issues/33)) ([#8](https://github.com/nystudio107/craft-plugin-vite/issues/8))
+
 ## 4.0.0 - 2022.05.07
 ### Added
 * Initial release for Craft CMS 4
