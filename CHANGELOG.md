@@ -1,7 +1,7 @@
 # Plugin Vite Changelog
 
 ## 1.0.26 - 2022.06.29
-### Fixed
+### Changed
 * Adds a boolean as a second param to the `craft.vite.asset(url, true)` so that assets in the vite public folder can be referenced correctly from Twig ([#10](https://github.com/nystudio107/craft-plugin-vite/pull/10))
 
 ## 1.0.25 - 2022.05.15
