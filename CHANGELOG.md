@@ -1,5 +1,9 @@
 # Plugin Vite Changelog
 
+## 1.0.26 - 2022.06.29
+### Fixed
+* Adds a boolean as a second param to the `craft.vite.asset(url, true)` so that assets in the vite public folder can be referenced correctly from Twig ([#10](https://github.com/nystudio107/craft-plugin-vite/pull/10))
+
 ## 1.0.25 - 2022.05.15
 ### Fixed
 * Fixed an issue where the plugin couldn't detect the Vite dev server by testing `__vite_ping` instead of `@vite/client` to determine whether the dev server is running or not ([#33](https://github.com/nystudio107/craft-vite/issues/33)) ([#8](https://github.com/nystudio107/craft-plugin-vite/issues/8))
