@@ -301,10 +301,14 @@ class ViteService extends Component
      *
      * @return string
      */
-    public function asset(string $path): string
+    public function asset(string $path, bool $public=false): string
     {
         if ($this->devServerRunning()) {
             return $this->devServerAsset($path);
+        }
+        
+        if ($public) {
+            return $this->publicAsset($path);
         }
 
         return $this->manifestAsset($path);
@@ -321,6 +325,19 @@ class ViteService extends Component
     {
         // Return a URL to the given asset
         return FileHelper::createUrl($this->devServerPublic, $path);
+    }
+    
+    /**
+     * Return the URL for the asset from the public Vite folder
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    public function publicAsset(string $path): string
+    {
+        // Return a URL to the given asset
+        return FileHelper::createUrl($this->serverPublic, $path);
     }
 
     /**
