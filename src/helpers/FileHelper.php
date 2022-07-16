@@ -14,6 +14,7 @@ use Craft;
 use craft\helpers\UrlHelper;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
+use Psr\Http\Message\ResponseInterface;
 use Throwable;
 use yii\caching\ChainedDependency;
 use yii\caching\FileDependency;
@@ -80,25 +81,9 @@ class FileHelper
                 $contents = null;
                 $result = null;
                 if (UrlHelper::isAbsoluteUrl($pathOrUrl)) {
-                    // See if we can connect to the server
-                    $clientOptions = [
-                        RequestOptions::HTTP_ERRORS => false,
-                        RequestOptions::CONNECT_TIMEOUT => 3,
-                        RequestOptions::VERIFY => false,
-                        RequestOptions::TIMEOUT => 5,
-                    ];
-                    $client = new Client($clientOptions);
-                    try {
-                        $response = $client->request('GET', $pathOrUrl, [
-                            RequestOptions::HEADERS => [
-                                'Accept' => '*/*',
-                            ],
-                        ]);
-                        if ($response->getStatusCode() === 200) {
-                            $contents = $response->getBody()->getContents();
-                        }
-                    } catch (Throwable $e) {
-                        Craft::error($e->getMessage(), __METHOD__);
+                    $response = self::fetchResponse($pathOrUrl);
+                    if ($response && $response->getStatusCode() === 200) {
+                        $contents = $response->getBody()->getContents();
                     }
                 } else {
                     $contents = @file_get_contents($pathOrUrl);
@@ -115,6 +100,35 @@ class FileHelper
             $cacheDuration,
             $dependency
         );
+    }
+
+    /**
+     * Return a Guzzle ResponseInterface for the passed in $url
+     *
+     * @param string $url
+     * @return ResponseInterface|null
+     */
+    public static function fetchResponse(string $url): ?ResponseInterface
+    {
+        $response = null;
+        $clientOptions = [
+            RequestOptions::HTTP_ERRORS => false,
+            RequestOptions::CONNECT_TIMEOUT => 3,
+            RequestOptions::VERIFY => false,
+            RequestOptions::TIMEOUT => 5,
+        ];
+        $client = new Client($clientOptions);
+        try {
+            $response = $client->request('GET', $url, [
+                RequestOptions::HEADERS => [
+                    'Accept' => '*/*',
+                ],
+            ]);
+        } catch (Throwable $e) {
+            Craft::error($e->getMessage(), __METHOD__);
+        }
+
+        return $response;
     }
 
     /**
