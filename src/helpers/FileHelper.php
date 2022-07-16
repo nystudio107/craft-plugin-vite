@@ -79,7 +79,6 @@ class FileHelper
             self::CACHE_KEY . $cacheKeySuffix . $pathOrUrl,
             function () use ($pathOrUrl, $callback) {
                 $contents = null;
-                $result = null;
                 if (UrlHelper::isAbsoluteUrl($pathOrUrl)) {
                     $response = self::fetchResponse($pathOrUrl);
                     if ($response && $response->getStatusCode() === 200) {
@@ -88,14 +87,11 @@ class FileHelper
                 } else {
                     $contents = @file_get_contents($pathOrUrl);
                 }
-                if ($contents) {
-                    $result = $contents;
-                    if ($callback) {
-                        $result = $callback($result);
-                    }
+                if ($contents && $callback) {
+                    $contents = $callback($contents);
                 }
 
-                return $result;
+                return $contents;
             },
             $cacheDuration,
             $dependency
