@@ -172,7 +172,13 @@ class ViteService extends Component
         }
         // Check to see if the dev server is actually running by pinging it
         $url = FileHelper::createUrl($this->devServerInternal, self::VITE_DEVSERVER_PING);
-        $this->devServerRunningCached = !($this->fetch($url) === null);
+        $response = FileHelper::fetchResponse($url);
+        $this->devServerRunningCached = false;
+        // Status code of 200 or 404 means the dev server is running
+        if ($response) {
+            $statusCode = $response->getStatusCode();
+            $this->devServerRunningCached = $statusCode === 200 || $statusCode === 404;
+        }
 
         return $this->devServerRunningCached;
     }
@@ -301,12 +307,12 @@ class ViteService extends Component
      *
      * @return string
      */
-    public function asset(string $path, bool $public=false): string
+    public function asset(string $path, bool $public = false): string
     {
         if ($this->devServerRunning()) {
             return $this->devServerAsset($path);
         }
-        
+
         if ($public) {
             return $this->publicAsset($path);
         }
@@ -326,7 +332,7 @@ class ViteService extends Component
         // Return a URL to the given asset
         return FileHelper::createUrl($this->devServerPublic, $path);
     }
-    
+
     /**
      * Return the URL for the asset from the public Vite folder
      *
