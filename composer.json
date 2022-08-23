@@ -27,5 +27,11 @@
     "psr-4": {
       "nystudio107\\pluginvite\\": "src/"
     }
+  },
+  "config": {
+    "allow-plugins": {
+      "craftcms/plugin-installer": true,
+      "yiisoft/yii2-composer": true
+    }
   }
 }
