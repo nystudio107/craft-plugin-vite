@@ -11,6 +11,7 @@
 namespace nystudio107\pluginvite\services;
 
 use Craft;
+use craft\helpers\App;
 use nystudio107\pluginvite\helpers\FileHelper;
 
 /**
@@ -51,7 +52,7 @@ class VitePluginService extends ViteService
             return;
         }
         // See if the $pluginDevServerEnvVar env var exists, and if not, don't run off of the dev server
-        $useDevServer = getenv($this->pluginDevServerEnvVar);
+        $useDevServer = (bool)App::env($this->pluginDevServerEnvVar);
         if ($useDevServer === false) {
             $this->useDevServer = false;
         }
