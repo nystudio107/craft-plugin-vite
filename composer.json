@@ -1,7 +1,7 @@
 {
   "name": "nystudio107/craft-plugin-vite",
   "description": "Plugin Vite is the conduit between Craft CMS plugins and Vite, with manifest.json & HMR support",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "keywords": [
     "craftcms",
     "plugin",
@@ -22,6 +22,14 @@
   "prefer-stable": true,
   "require": {
     "craftcms/cms": "^4.0.0"
+  },
+  "config": {
+    "allow-plugins": {
+      "craftcms/plugin-installer": true,
+      "yiisoft/yii2-composer": true
+    },
+    "optimize-autoloader": true,
+    "sort-packages": true
   },
   "autoload": {
     "psr-4": {
