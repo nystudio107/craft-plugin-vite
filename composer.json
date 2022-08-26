@@ -23,15 +23,17 @@
   "require": {
     "craftcms/cms": "^3.0.0"
   },
-  "autoload": {
-    "psr-4": {
-      "nystudio107\\pluginvite\\": "src/"
-    }
-  },
   "config": {
     "allow-plugins": {
       "craftcms/plugin-installer": true,
       "yiisoft/yii2-composer": true
+    },
+    "optimize-autoloader": true,
+    "sort-packages": true
+  },
+  "autoload": {
+    "psr-4": {
+      "nystudio107\\pluginvite\\": "src/"
     }
   }
 }
