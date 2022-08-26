@@ -52,7 +52,7 @@ class VitePluginService extends ViteService
             return;
         }
         // See if the $pluginDevServerEnvVar env var exists, and if not, don't run off of the dev server
-        $useDevServer = (bool) App::env($this->pluginDevServerEnvVar);
+        $useDevServer = (bool)App::env($this->pluginDevServerEnvVar);
         if ($useDevServer === false) {
             $this->useDevServer = false;
         }
