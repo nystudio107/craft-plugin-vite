@@ -1,5 +1,13 @@
 # Plugin Vite Changelog
 
+## 4.0.4 - 2022.08.26
+### Changed
+* Use `App::env()` for reading environment variables ([#11](https://github.com/nystudio107/craft-plugin-vite/pull/11))
+* Add `allow-plugins` so CI tests will work ([#12](https://github.com/nystudio107/craft-plugin-vite/pull/12))
+
+### Fixed
+* Only inject the error entry if the dev server is running (not just whether `devMode` is enabled or not) ([#244](https://github.com/nystudio107/craft-retour/issues/244))
+
 ## 4.0.3 - 2022.07.16
 ### Changed
 * Fixed an issue where `checkDevServer` didn't work with Vite 3, because they removed the intercepting of `__vite_ping` ([#37](https://github.com/nystudio107/craft-vite/issues/37))
