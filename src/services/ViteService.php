@@ -124,7 +124,7 @@ class ViteService extends Component
             return;
         }
         // Our component is lazily loaded, so the View will be instantiated by now
-        if (Craft::$app->getConfig()->getGeneral()->devMode) {
+        if ($this->devServerRunning() && Craft::$app->getConfig()->getGeneral()->devMode) {
             Craft::$app->getView()->on(View::EVENT_END_BODY, [$this, 'injectErrorEntry']);
         }
     }
