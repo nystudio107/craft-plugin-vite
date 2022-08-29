@@ -1,5 +1,9 @@
 # Plugin Vite Changelog
 
+## 1.0.30 - 2022.08.29
+### Fixed
+* Move the call to `parent::init()` in `VitePluginService` down to after `useDevServer` is set based on the check for the `VITE_PLUGIN_DEVSERVER` environment variable ([#244](https://github.com/nystudio107/craft-retour/issues/244))
+
 ## 1.0.29 - 2022.08.29
 ### Fixed
 * Ensure that `useDevServer` is properly set to `false` even if somehow the incoming request is not a CP request ([#244](https://github.com/nystudio107/craft-retour/issues/244))
