@@ -45,12 +45,12 @@ class VitePluginService extends ViteService
      */
     public function init(): void
     {
-        parent::init();
         // See if the $pluginDevServerEnvVar env var exists, and if not, don't run off of the dev server
         $useDevServer = (bool)App::env($this->pluginDevServerEnvVar);
         if ($useDevServer === false) {
             $this->useDevServer = false;
         }
+        parent::init();
         // Only bother if this is a CP request
         $request = Craft::$app->getRequest();
         if (!$request->getIsCpRequest()) {
