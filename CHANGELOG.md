@@ -1,5 +1,9 @@
 # Plugin Vite Changelog
 
+## 4.0.7 - 2022.11.08
+### Changed
+* Allow setting the `manifestPath` automatically based on the AssetBundle for all requests, not just CP requests
+
 ## 4.0.6 - 2022.08.29
 ### Fixed
 * Move the call to `parent::init()` in `VitePluginService` down to after `useDevServer` is set based on the check for the `VITE_PLUGIN_DEVSERVER` environment variable ([#244](https://github.com/nystudio107/craft-retour/issues/244))

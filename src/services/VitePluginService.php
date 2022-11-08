@@ -51,11 +51,6 @@ class VitePluginService extends ViteService
             $this->useDevServer = false;
         }
         parent::init();
-        // Only bother if this is a CP request
-        $request = Craft::$app->getRequest();
-        if (!$request->getIsCpRequest()) {
-            return;
-        }
         // If we're in a plugin, make sure the caches are unique
         if ($this->assetClass) {
             $this->cacheKeySuffix = $this->assetClass;
