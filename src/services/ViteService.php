@@ -366,7 +366,11 @@ class ViteService extends Component
             }
         }
 
-        return '';
+        // With Vite 3.x or later, the assets are also included as top-level entries in the
+        // manifest, so check there, too
+        $entry = ManifestHelper::extractEntry($path);
+
+        return $entry === '' ? '' : FileHelper::createUrl($this->serverPublic, $entry);
     }
 
     /**
