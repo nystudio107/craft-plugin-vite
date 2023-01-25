@@ -1,5 +1,10 @@
 # Plugin Vite Changelog
 
+## 1.0.32 - 2023.01.25
+### Changed
+* Updated the `craft.vite.asset()` function to work with Vite 3.x or later, where assets are stored as top-level entries in the `manifest.json` ([#56](https://github.com/nystudio107/craft-vite/issues/56)) ([#31](https://github.com/nystudio107/craft-vite/issues/31))
+* You can now include CSS manually if it's a top-level entry (rather than being imported into your JavaScript) via `craft.vite.asset("src/css/app.css")` ([#31](https://github.com/nystudio107/craft-vite/issues/31))
+
 ## 1.0.31 - 2022.11.08
 ### Changed
 * Allow setting the `manifestPath` automatically based on the AssetBundle for all requests, not just CP requests
