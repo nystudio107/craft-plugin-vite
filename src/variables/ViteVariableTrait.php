@@ -103,15 +103,22 @@ trait ViteVariableTrait
 
     /**
      * Inline the contents of a local file (via path) or remote file (via URL) in your templates.
-     * Yii2 aliases and/or environment variables may be used
+     * Yii2 aliases and/or environment variables may be used.
+	 * If $manifest is true, the local file path will be returned from the manifest
      *
      * @param string $pathOrUrl
+     * @param boolean $manifest
      *
      * @return Markup
      */
-    public function inline(string $pathOrUrl): Markup
+	public function inline(string $pathOrUrl, bool $manifest=false): Markup
     {
-        $file = $this->viteService->fetch($pathOrUrl);
+        if ($manifest) {
+            $manifestPath = $this->viteService->manifestAsset($pathOrUrl, true);
+            $file = $this->viteService->fetch($manifestPath);
+        } else {
+            $file = $this->viteService->fetch($pathOrUrl);
+        }
         if ($file === null) {
             $file = '';
         }
