@@ -164,6 +164,8 @@ class ManifestHelper
             }
             // Include any CSS tags
             $cssFiles = [];
+            $isCssEntry = str_contains(self::$manifest[$manifestKey]['file'] ?? '', '.css');
+
             self::extractCssFiles(self::$manifest, $manifestKey, $cssFiles);
             foreach ($cssFiles as $cssFile) {
                 $tags[$cssFile] = [
@@ -173,6 +175,11 @@ class ManifestHelper
                         'rel' => 'stylesheet',
                     ], $asyncCssOptions, $cssTagAttrs)
                 ];
+            }
+
+            // Remove duplicate script entry since this is CSS-like entry
+            if ($isCssOutputFile) {
+                unset($tags[$manifestKey]);
             }
         }
 
@@ -219,8 +226,14 @@ class ManifestHelper
         if (!$entry) {
             return [];
         }
+        $entryFileName = $entry['file'] ?? '';
         $cssFiles = array_merge($cssFiles, $entry['css'] ?? []);
         $imports = $entry['imports'] ?? [];
+
+        if (str_contains($entryFileName, '.css')) {
+            $cssFiles[] = $entryFileName;
+        }
+
         foreach ($imports as $import) {
             self::extractCssFiles($manifest, $import, $cssFiles);
         }
