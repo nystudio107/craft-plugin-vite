@@ -1,5 +1,9 @@
 # Plugin Vite Changelog
 
+## 4.0.9 - UNRELEASED
+### Added
+* If the `devServer` is running, the `ViteService::fetch()` method will try to use the `devServerInternal` URL first, falling back on the `devServerPublic` so that `craft.vite.inline()` can pull from the `devServer` if it is running ([#22](https://github.com/nystudio107/craft-plugin-vite/issues/22))
+
 ## 4.0.8 - 2023.01.25
 ### Changed
 * Updated the `craft.vite.asset()` function to work with Vite 3.x or later, where assets are stored as top-level entries in the `manifest.json` ([#56](https://github.com/nystudio107/craft-vite/issues/56)) ([#31](https://github.com/nystudio107/craft-vite/issues/31))
