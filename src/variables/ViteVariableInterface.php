@@ -1,6 +1,6 @@
 <?php
 /**
- * Vite plugin for Craft CMS 3.x
+ * Vite plugin for Craft CMS
  *
  * Allows the use of the Vite.js next generation frontend tooling with Craft CMS
  *
@@ -10,9 +10,9 @@
 
 namespace nystudio107\pluginvite\variables;
 
-use yii\base\InvalidConfigException;
-
 use Twig\Markup;
+
+use yii\base\InvalidConfigException;
 
 /**
  * @author    nystudio107
@@ -75,7 +75,7 @@ interface ViteVariableInterface
      *
      * @param string $pathOrUrl
      *
-     * @return string|null
+     * @return Markup
      */
     public function inline(string $pathOrUrl): Markup;
 

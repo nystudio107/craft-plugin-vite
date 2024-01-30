@@ -1,6 +1,6 @@
 <?php
 /**
- * Vite plugin for Craft CMS 3.x
+ * Vite plugin for Craft CMS
  *
  * Allows the use of the Vite.js next generation frontend tooling with Craft CMS
  *
@@ -195,6 +195,18 @@ class ViteService extends Component
      */
     public function fetch(string $pathOrUrl, callable $callback = null): string|array|null
     {
+        // If the devServer is running, and this is a URL, swap in the devServerInternal URL
+        if ($this->devServerRunning()) {
+            if (!filter_var($pathOrUrl, FILTER_VALIDATE_URL) === false) {
+                $devServerInternalUrl = str_replace($this->devServerPublic, '', $pathOrUrl);
+                $devServerInternalUrl = FileHelper::createUrl($this->devServerInternal, $devServerInternalUrl);
+                // If we get a result from the $devServerInternalUrl, return it
+                if ($devServerInternalResult = FileHelper::fetch($devServerInternalUrl, $callback, $this->cacheKeySuffix)) {
+                    return $devServerInternalResult;
+                }
+            }
+        }
+
         return FileHelper::fetch($pathOrUrl, $callback, $this->cacheKeySuffix);
     }
 
