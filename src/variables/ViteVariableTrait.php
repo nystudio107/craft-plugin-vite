@@ -10,13 +10,13 @@
 
 namespace nystudio107\pluginvite\variables;
 
-use nystudio107\pluginvite\services\ViteService;
-
 use craft\helpers\Template;
 
-use yii\base\InvalidConfigException;
+use nystudio107\pluginvite\services\ViteService;
 
 use Twig\Markup;
+
+use yii\base\InvalidConfigException;
 
 /**
  * @author    nystudio107
@@ -94,7 +94,7 @@ trait ViteVariableTrait
      *
      * @return Markup
      */
-    public function asset(string $path, bool $public=false): Markup
+    public function asset(string $path, bool $public = false): Markup
     {
         return Template::raw(
             $this->viteService->asset($path, $public)

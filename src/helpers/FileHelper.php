@@ -63,10 +63,10 @@ class FileHelper
             $dependency = new ChainedDependency([
                 'dependencies' => [
                     new FileDependency([
-                        'fileName' => $pathOrUrl
+                        'fileName' => $pathOrUrl,
                     ]),
-                    $dependency
-                ]
+                    $dependency,
+                ],
             ]);
         }
         // Set the cache duration based on devMode
@@ -77,7 +77,7 @@ class FileHelper
         $cache = Craft::$app->getCache();
         return $cache->getOrSet(
             self::CACHE_KEY . $cacheKeySuffix . $pathOrUrl,
-            function () use ($pathOrUrl, $callback) {
+            function() use ($pathOrUrl, $callback) {
                 $contents = null;
                 if (UrlHelper::isAbsoluteUrl($pathOrUrl)) {
                     $response = self::fetchResponse($pathOrUrl);

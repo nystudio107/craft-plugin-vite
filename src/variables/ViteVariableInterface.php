@@ -10,9 +10,9 @@
 
 namespace nystudio107\pluginvite\variables;
 
-use yii\base\InvalidConfigException;
-
 use Twig\Markup;
+
+use yii\base\InvalidConfigException;
 
 /**
  * @author    nystudio107

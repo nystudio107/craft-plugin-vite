@@ -13,7 +13,6 @@ namespace nystudio107\pluginvite\helpers;
 use Craft;
 use craft\helpers\Json as JsonHelper;
 
-
 /**
  * @author    nystudio107
  * @package   Vite
@@ -137,7 +136,7 @@ class ManifestHelper
             $tagOptions = array_merge(
                 $scriptOptions,
                 [
-                    'onload' => "e=new CustomEvent('vite-script-loaded', {detail:{path: '$manifestKey'}});document.dispatchEvent(e);"
+                    'onload' => "e=new CustomEvent('vite-script-loaded', {detail:{path: '$manifestKey'}});document.dispatchEvent(e);",
                 ],
                 $integrityAttributes,
                 $scriptTagAttrs
@@ -146,7 +145,7 @@ class ManifestHelper
             $tags[$manifestKey] = [
                 'type' => 'file',
                 'url' => $entry['file'],
-                'options' => $tagOptions
+                'options' => $tagOptions,
             ];
             // Include any imports
             $importFiles = [];
@@ -171,7 +170,7 @@ class ManifestHelper
                     'url' => $cssFile,
                     'options' => array_merge([
                         'rel' => 'stylesheet',
-                    ], $asyncCssOptions, $cssTagAttrs)
+                    ], $asyncCssOptions, $cssTagAttrs),
                 ];
             }
         }
