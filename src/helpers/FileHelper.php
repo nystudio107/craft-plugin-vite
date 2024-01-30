@@ -1,6 +1,6 @@
 <?php
 /**
- * Vite plugin for Craft CMS 3.x
+ * Vite plugin for Craft CMS
  *
  * Allows the use of the Vite.js next generation frontend tooling with Craft CMS
  *
@@ -30,12 +30,12 @@ class FileHelper
     // Constants
     // =========================================================================
 
-    const CACHE_KEY = 'vite';
-    const CACHE_TAG = 'vite';
+    public const CACHE_KEY = 'vite';
+    public const CACHE_TAG = 'vite';
 
-    const DEVMODE_CACHE_DURATION = 1;
+    public const DEVMODE_CACHE_DURATION = 1;
 
-    const SCRIPTS_DIR = '@vendor/nystudio107/craft-plugin-vite/src/web/assets/dist/';
+    public const SCRIPTS_DIR = '@vendor/nystudio107/craft-plugin-vite/src/web/assets/dist/';
 
     /**
      * Return the contents of a local file (via path) or remote file (via URL),
@@ -63,10 +63,10 @@ class FileHelper
             $dependency = new ChainedDependency([
                 'dependencies' => [
                     new FileDependency([
-                        'fileName' => $pathOrUrl
+                        'fileName' => $pathOrUrl,
                     ]),
-                    $dependency
-                ]
+                    $dependency,
+                ],
             ]);
         }
         // Set the cache duration based on devMode
@@ -77,7 +77,7 @@ class FileHelper
         $cache = Craft::$app->getCache();
         return $cache->getOrSet(
             self::CACHE_KEY . $cacheKeySuffix . $pathOrUrl,
-            function () use ($pathOrUrl, $callback) {
+            function() use ($pathOrUrl, $callback) {
                 $contents = null;
                 if (UrlHelper::isAbsoluteUrl($pathOrUrl)) {
                     $response = self::fetchResponse($pathOrUrl);
