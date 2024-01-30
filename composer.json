@@ -1,7 +1,7 @@
 {
   "name": "nystudio107/craft-plugin-vite",
   "description": "Plugin Vite is the conduit between Craft CMS plugins and Vite, with manifest.json & HMR support",
-  "version": "1.0.32",
+  "version": "1.0.33",
   "keywords": [
     "craftcms",
     "plugin",
@@ -22,6 +22,16 @@
   "prefer-stable": true,
   "require": {
     "craftcms/cms": "^3.0.0"
+  },
+  "require-dev": {
+    "craftcms/ecs": "dev-main",
+    "craftcms/phpstan": "dev-main",
+    "craftcms/rector": "dev-main"
+  },
+  "scripts": {
+    "phpstan": "vendor/bin/phpstan --ansi --memory-limit=1G",
+    "check-cs": "ecs check --ansi",
+    "fix-cs": "ecs check --fix --ansi"
   },
   "config": {
     "allow-plugins": {

@@ -10,9 +10,9 @@
 
 namespace nystudio107\pluginvite\variables;
 
-use yii\base\InvalidConfigException;
-
 use Twig\Markup;
+
+use yii\base\InvalidConfigException;
 
 /**
  * @author    nystudio107
@@ -75,7 +75,7 @@ interface ViteVariableInterface
      *
      * @param string $pathOrUrl
      *
-     * @return string|null
+     * @return Markup
      */
     public function inline(string $pathOrUrl): Markup;
 
