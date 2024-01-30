@@ -75,7 +75,7 @@ interface ViteVariableInterface
      *
      * @param string $pathOrUrl
      *
-     * @return string|null
+     * @return Markup
      */
     public function inline(string $pathOrUrl): Markup;
 
