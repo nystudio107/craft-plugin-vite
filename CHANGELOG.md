@@ -1,5 +1,9 @@
 # Plugin Vite Changelog
 
+## 5.0.0-beta.3 - UNRELEASED
+### Fixed
+* Fixed an issue where `craft.vite.entry()` would fail if you were using Vite 5 or later, due to the `ManifestHelper::fileNameWithoutHash()` function not working correctly ([#24](https://github.com/nystudio107/craft-plugin-vite/issues/24))
+
 ## 5.0.0-beta.2 - 2024.01.30
 ### Added
 * If the `devServer` is running, the `ViteService::fetch()` method will try to use the `devServerInternal` URL first, falling back on the `devServerPublic` so that `craft.vite.inline()` can pull from the `devServer` if it is running ([#22](https://github.com/nystudio107/craft-plugin-vite/issues/22))
