@@ -179,6 +179,88 @@ class ManifestHelper
     }
 
     /**
+     * Return an array of tags from the manifest, for both modern and legacy builds
+     *
+     * @param string $path
+     * @param bool $asyncCss
+     * @param array $scriptTagAttrs
+     * @param array $cssTagAttrs
+     *
+     * @return array
+     */
+    public static function legacyManifestTags(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): array
+    {
+        // Get the legacy tags for this $path
+        $parts = pathinfo($path);
+        $legacyPath = $parts['dirname']
+            . '/'
+            . $parts['filename']
+            . self::LEGACY_EXTENSION
+            . $parts['extension'];
+
+        return self::extractManifestTags($legacyPath, $asyncCss, $scriptTagAttrs, $cssTagAttrs, true);
+    }
+
+    /**
+     * Extract an entry file URL from all of the entries in the manifest
+     *
+     * @return string
+     */
+    public static function extractEntry(string $path): string
+    {
+        foreach (self::$manifest as $entryKey => $entry) {
+            if (strpos($entryKey, $path) !== false) {
+                return $entry['file'] ?? '';
+            }
+            // Check CSS
+            $styles = $entry['css'] ?? [];
+            foreach ($styles as $style) {
+                $styleKey = self::filenameWithoutHash($style);
+                if (strpos($styleKey, $path) !== false) {
+                    return $style;
+                }
+            }
+            // Check assets
+            $assets = $entry['assets'] ?? [];
+            foreach ($assets as $asset) {
+                $assetKey = self::filenameWithoutHash($asset);
+                if (strpos($assetKey, $path) !== false) {
+                    return $asset;
+                }
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Extract any asset files from all of the entries in the manifest
+     *
+     * @return array
+     */
+    public static function extractAssetFiles(): array
+    {
+        // Used the memoized version if available
+        if (self::$assetFiles !== null) {
+            return self::$assetFiles;
+        }
+        $assetFiles = [];
+        foreach (self::$manifest as $entry) {
+            $assets = $entry['assets'] ?? [];
+            foreach ($assets as $asset) {
+                $assetKey = self::filenameWithoutHash($asset);
+                $assetFiles[$assetKey] = $asset;
+            }
+        }
+        self::$assetFiles = $assetFiles;
+
+        return $assetFiles;
+    }
+
+    // Protected Static Methods
+    // =========================================================================
+
+    /**
      * Extract any import files from entries recursively
      *
      * @param array $manifest
@@ -228,64 +310,6 @@ class ManifestHelper
     }
 
     /**
-     * Return an array of tags from the manifest, for both modern and legacy builds
-     *
-     * @param string $path
-     * @param bool $asyncCss
-     * @param array $scriptTagAttrs
-     * @param array $cssTagAttrs
-     *
-     * @return array
-     */
-    public static function legacyManifestTags(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): array
-    {
-        // Get the legacy tags for this $path
-        $parts = pathinfo($path);
-        $legacyPath = $parts['dirname']
-            . '/'
-            . $parts['filename']
-            . self::LEGACY_EXTENSION
-            . $parts['extension'];
-
-        return self::extractManifestTags($legacyPath, $asyncCss, $scriptTagAttrs, $cssTagAttrs, true);
-    }
-
-    // Protected Static Methods
-    // =========================================================================
-
-    /**
-     * Extract an entry file URL from all of the entries in the manifest
-     *
-     * @return string
-     */
-    public static function extractEntry(string $path): string
-    {
-        foreach (self::$manifest as $entryKey => $entry) {
-            if (strpos($entryKey, $path) !== false) {
-                return $entry['file'] ?? '';
-            }
-            // Check CSS
-            $styles = $entry['css'] ?? [];
-            foreach ($styles as $style) {
-                $styleKey = self::filenameWithoutHash($style);
-                if (strpos($styleKey, $path) !== false) {
-                    return $style;
-                }
-            }
-            // Check assets
-            $assets = $entry['assets'] ?? [];
-            foreach ($assets as $asset) {
-                $assetKey = self::filenameWithoutHash($asset);
-                if (strpos($assetKey, $path) !== false) {
-                    return $asset;
-                }
-            }
-        }
-
-        return '';
-    }
-
-    /**
      * Return a file name from the passed in $path, with any version hash removed from it
      *
      * @param string $path
@@ -293,41 +317,17 @@ class ManifestHelper
      */
     protected static function filenameWithoutHash(string $path): string
     {
-        // Get just the file name
-        $filenameParts = explode('/', $path);
-        $filename = end($filenameParts);
-        // If there is a version hash, remove it
-        $filenameParts = explode('.', $filename);
-        $dotSegments = count($filenameParts);
-        if ($dotSegments > 2) {
-            unset($filenameParts[$dotSegments - 2]);
-            $filename = implode('.', $filenameParts);
+        $pathInfo = pathinfo($path);
+        $filename = $pathInfo['filename'];
+        $extension = $pathInfo['extension'];
+        $hashPos = strpos($filename, '.') ?: strlen($filename);
+        $hash = substr($filename, $hashPos);
+        // Vite 5 now uses a `-` to separate the version hash, so account for that as well
+        if (empty($hash) && str_contains($filename, '-')) {
+            $hash = substr($filename, strpos($filename, '-'));
         }
+        $filename = str_replace($hash, '', $filename);
 
-        return (string)$filename;
-    }
-
-    /**
-     * Extract any asset files from all of the entries in the manifest
-     *
-     * @return array
-     */
-    public static function extractAssetFiles(): array
-    {
-        // Used the memoized version if available
-        if (self::$assetFiles !== null) {
-            return self::$assetFiles;
-        }
-        $assetFiles = [];
-        foreach (self::$manifest as $entry) {
-            $assets = $entry['assets'] ?? [];
-            foreach ($assets as $asset) {
-                $assetKey = self::filenameWithoutHash($asset);
-                $assetFiles[$assetKey] = $asset;
-            }
-        }
-        self::$assetFiles = $assetFiles;
-
-        return $assetFiles;
+        return implode('.', [$filename, $extension]);
     }
 }
