@@ -1,6 +1,6 @@
 # Plugin Vite Changelog
 
-## 5.0.0-beta.3 - UNRELEASED
+## 5.0.0-beta.3 - 2024.03.02
 ### Fixed
 * Fixed an issue where `craft.vite.entry()` would fail if you were using Vite 5 or later, due to the `ManifestHelper::fileNameWithoutHash()` function not working correctly ([#24](https://github.com/nystudio107/craft-plugin-vite/issues/24))
 
