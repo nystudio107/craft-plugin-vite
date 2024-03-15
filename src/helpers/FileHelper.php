@@ -142,6 +142,19 @@ class FileHelper
     }
 
     /**
+     * Combine a path with dist to create a full path
+     * @param string $url
+     * @param string $path
+     *
+     * @return string
+     */
+    public static function createPath(string $distPath, string $path): string
+    {
+        $distPath = (string)Craft::parseEnv($distPath);
+        return rtrim($distPath, '/') . '/' . trim($path, '/');
+    }
+
+    /**
      * Fetch a script file
      *
      * @param string $name

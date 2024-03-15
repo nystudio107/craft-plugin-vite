@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Vite plugin for Craft CMS 3.x
  *
@@ -46,7 +47,12 @@ class ViteService extends Component
     /**
      * @var string File system path (or URL) to the Vite-built manifest.json
      */
-    public $manifestPath;
+    public string $manifestPath = '';
+
+    /**
+     * @var string File system path to the Vite-built assets
+     */
+    public string $distPath = '';
 
     /**
      * @var string The public URL to the dev server (what appears in `<script src="">` tags
@@ -362,10 +368,11 @@ class ViteService extends Component
      * Return the URL for the asset from the manifest.json file
      *
      * @param string $path
+     * @param boolean $returnFilePath
      *
      * @return string
      */
-    public function manifestAsset(string $path): string
+    public function manifestAsset(string $path, bool $returnFilePath = false): string
     {
         ManifestHelper::fetchManifest($this->manifestPath);
         $assets = ManifestHelper::extractAssetFiles();
@@ -374,6 +381,9 @@ class ViteService extends Component
         $assetKey = end($assetKeyParts);
         foreach ($assets as $key => $value) {
             if ($key === $assetKey) {
+                if ($returnFilePath) {
+                    return FileHelper::createPath($this->distPath, $path);
+                }
                 return FileHelper::createUrl($this->serverPublic, $value);
             }
         }
@@ -382,7 +392,15 @@ class ViteService extends Component
         // manifest, so check there, too
         $entry = ManifestHelper::extractEntry($path);
 
-        return $entry === '' ? '' : FileHelper::createUrl($this->serverPublic, $entry);
+        if ($entry === '') {
+            return '';
+        }
+
+        if ($returnFilePath) {
+            return FileHelper::createPath($this->distPath, $entry);
+        }
+
+        return FileHelper::createUrl($this->serverPublic, $entry);
     }
 
     /**
