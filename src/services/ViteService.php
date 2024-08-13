@@ -111,7 +111,7 @@ class ViteService extends Component
 
     // Public Methods
     // =========================================================================
-    
+
     /**
      * @inheritDoc
      */
@@ -315,6 +315,20 @@ class ViteService extends Component
         $entry = ManifestHelper::extractEntry($path);
 
         return FileHelper::createUrl($this->serverPublic, $entry);
+    }
+
+    /**
+     * Return the integrity hash (or an empty string if not present) for the given entry
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    public function integrity(string $path): string
+    {
+        ManifestHelper::fetchManifest($this->manifestPath);
+
+        return ManifestHelper::extractIntegrity($path);
     }
 
     /**
