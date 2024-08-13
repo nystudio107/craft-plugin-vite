@@ -11,11 +11,8 @@
 namespace nystudio107\pluginvite\variables;
 
 use craft\helpers\Template;
-
 use nystudio107\pluginvite\services\ViteService;
-
 use Twig\Markup;
-
 use yii\base\InvalidConfigException;
 
 /**
@@ -84,6 +81,20 @@ trait ViteVariableTrait
     {
         return Template::raw(
             $this->viteService->entry($path)
+        );
+    }
+
+    /**
+     * Return the integrity hash (or an empty string if not present) for the given entry
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    public function integrity(string $path): string
+    {
+        return Template::raw(
+            $this->viteService->integrity($path)
         );
     }
 

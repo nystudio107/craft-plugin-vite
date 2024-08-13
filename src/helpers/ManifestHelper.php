@@ -204,6 +204,7 @@ class ManifestHelper
     /**
      * Extract an entry file URL from all of the entries in the manifest
      *
+     * @param string $path
      * @return string
      */
     public static function extractEntry(string $path): string
@@ -227,6 +228,24 @@ class ManifestHelper
                 if (strpos($assetKey, $path) !== false) {
                     return $asset;
                 }
+            }
+        }
+
+        return '';
+    }
+
+
+    /**
+     * Extract an integrity hash for the given $path from the entries in the manifest
+     *
+     * @param string $path
+     * @return string
+     */
+    public static function extractIntegrity(string $path): string
+    {
+        foreach (self::$manifest as $entryKey => $entry) {
+            if (strpos($entryKey, $path) !== false) {
+                return $entry['integrity'] ?? '';
             }
         }
 
