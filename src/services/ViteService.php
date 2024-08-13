@@ -318,6 +318,20 @@ class ViteService extends Component
     }
 
     /**
+     * Return the integrity hash (or an empty string if not present) for the given entry
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    public function integrity(string $path): string
+    {
+        ManifestHelper::fetchManifest($this->manifestPath);
+
+        return ManifestHelper::extractIntegrity($path);
+    }
+
+    /**
      * Return the URL for the given asset
      *
      * @param string $path
