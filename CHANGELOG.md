@@ -4,6 +4,9 @@
 ### Changed
 * Filter out empty attributes so they don't render on the `<script>` tags
 
+### Fixed
+* Use `strrpos` instead of `strpos` when attempting to extract a file name without the hash ([#28](https://github.com/nystudio107/craft-plugin-vite/pull/28))
+
 ## 4.0.11 - 2024.06.12
 ### Added
 * By default, only load the Vite AssetBundle if the request is a CP request or a preview request. This can be overridden via the `useForAllRequests` VitePluginService property ([#27](https://github.com/nystudio107/craft-plugin-vite/issues/27))
