@@ -349,4 +349,3 @@ class ManifestHelper
         return implode('.', [$filename, $extension]);
     }
 }
-
