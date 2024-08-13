@@ -1,6 +1,9 @@
 # Plugin Vite Changelog
 
 ## 4.0.12 - UNRELEASED
+### Added
+* Add a `craft.vite.integrity()` method that will extract the integrity hash (for building a Content Security Policy)
+
 ### Changed
 * Filter out empty attributes so they don't render on the `<script>` tags
 
