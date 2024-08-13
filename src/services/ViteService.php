@@ -91,6 +91,11 @@ class ViteService extends Component
      */
     public bool $includeModulePreloadShim = true;
 
+    /**
+     * @var bool Whether an onload handler should be added to <script> tags to fire a custom event when the script has loaded
+     */
+    public bool $includeScriptOnloadHandler = true;
+
     // Protected Properties
     // =========================================================================
 
@@ -538,6 +543,9 @@ class ViteService extends Component
                 $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
                 switch ($tag['type']) {
                     case 'file':
+                        if (!$this->includeScriptOnloadHandler) {
+                            unset($tag['options']['onload']);
+                        }
                         $view->registerJsFile(
                             $url,
                             $tag['options'],
@@ -619,6 +627,9 @@ class ViteService extends Component
                 $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
                 switch ($tag['type']) {
                     case 'file':
+                        if (!$this->includeScriptOnloadHandler) {
+                            unset($tag['options']['onload']);
+                        }
                         $lines[] = HtmlHelper::jsFile($url, $tag['options']);
                         break;
                     case 'css':
