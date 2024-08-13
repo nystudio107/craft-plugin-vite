@@ -320,14 +320,15 @@ class ManifestHelper
         $pathInfo = pathinfo($path);
         $filename = $pathInfo['filename'];
         $extension = $pathInfo['extension'];
-        $hashPos = strpos($filename, '.') ?: strlen($filename);
+        $hashPos = strrpos($filename, '.') ?: strlen($filename);
         $hash = substr($filename, $hashPos);
         // Vite 5 now uses a `-` to separate the version hash, so account for that as well
         if (empty($hash) && str_contains($filename, '-')) {
-            $hash = substr($filename, strpos($filename, '-'));
+            $hash = substr($filename, strrpos($filename, '-'));
         }
         $filename = str_replace($hash, '', $filename);
 
         return implode('.', [$filename, $extension]);
     }
 }
+
