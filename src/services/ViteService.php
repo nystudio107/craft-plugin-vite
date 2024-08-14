@@ -91,6 +91,11 @@ class ViteService extends Component
      */
     public bool $includeModulePreloadShim = true;
 
+    /**
+     * @var bool Whether an onload handler should be added to <script> tags to fire a custom event when the script has loaded
+     */
+    public bool $includeScriptOnloadHandler = true;
+
     // Protected Properties
     // =========================================================================
 
@@ -143,6 +148,11 @@ class ViteService extends Component
      */
     public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): void
     {
+        // Filter out empty attributes, but preserve boolean values
+        $preserveBools = fn($value) => is_bool($value) || !empty($value);
+        $scriptTagAttrs = array_filter($scriptTagAttrs, $preserveBools);
+        $cssTagAttrs = array_filter($cssTagAttrs, $preserveBools);
+
         if ($this->devServerRunning()) {
             $this->devServerRegister($path, $scriptTagAttrs);
 
@@ -313,6 +323,20 @@ class ViteService extends Component
     }
 
     /**
+     * Return the integrity hash (or an empty string if not present) for the given entry
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    public function integrity(string $path): string
+    {
+        ManifestHelper::fetchManifest($this->manifestPath);
+
+        return ManifestHelper::extractIntegrity($path);
+    }
+
+    /**
      * Return the URL for the given asset
      *
      * @param string $path
@@ -408,6 +432,11 @@ class ViteService extends Component
      */
     public function script(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): string
     {
+        // Filter out empty attributes, but preserve boolean values
+        $preserveBools = fn($value) => is_bool($value) || !empty($value);
+        $scriptTagAttrs = array_filter($scriptTagAttrs, $preserveBools);
+        $cssTagAttrs = array_filter($cssTagAttrs, $preserveBools);
+
         if ($this->devServerRunning()) {
             return $this->devServerScript($path, $scriptTagAttrs);
         }
@@ -514,6 +543,9 @@ class ViteService extends Component
                 $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
                 switch ($tag['type']) {
                     case 'file':
+                        if (!$this->includeScriptOnloadHandler) {
+                            unset($tag['options']['onload']);
+                        }
                         $view->registerJsFile(
                             $url,
                             $tag['options'],
@@ -595,6 +627,9 @@ class ViteService extends Component
                 $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
                 switch ($tag['type']) {
                     case 'file':
+                        if (!$this->includeScriptOnloadHandler) {
+                            unset($tag['options']['onload']);
+                        }
                         $lines[] = HtmlHelper::jsFile($url, $tag['options']);
                         break;
                     case 'css':
