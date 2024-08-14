@@ -65,7 +65,6 @@ class VitePluginService extends ViteService
             $this->useDevServer = false;
         }
         parent::init();
-        // If this isn't a CP request,
         // If we're in a plugin, make sure the caches are unique
         if ($this->assetClass) {
             $this->cacheKeySuffix = $this->assetClass;

@@ -1,5 +1,16 @@
 # Plugin Vite Changelog
 
+## 5.0.2 - 2024.08.13
+### Added
+* Add a `craft.vite.integrity()` method that will extract the integrity hash (for building a Content Security Policy)
+* Added an `includeScriptOnloadHandler` config setting that allows you to disable the adding of an `onload` handler on the `<script>` tags (useful when implementing a Content Security Policy)
+
+### Changed
+* Filter out empty attributes so they don't render on the `<script>` tags
+
+### Fixed
+* Use `strrpos` instead of `strpos` when attempting to extract a file name without the hash ([#28](https://github.com/nystudio107/craft-plugin-vite/pull/28))
+
 ## 5.0.1 - 2024.06.12
 ### Added
 * By default, only load the Vite AssetBundle if the request is a CP request or a preview request. This can be overridden via the `useForAllRequests` VitePluginService property ([#27](https://github.com/nystudio107/craft-plugin-vite/issues/27))

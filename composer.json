@@ -1,7 +1,7 @@
 {
   "name": "nystudio107/craft-plugin-vite",
   "description": "Plugin Vite is the conduit between Craft CMS plugins and Vite, with manifest.json & HMR support",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "keywords": [
     "craftcms",
     "plugin",
