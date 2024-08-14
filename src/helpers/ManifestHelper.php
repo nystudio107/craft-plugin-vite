@@ -204,6 +204,7 @@ class ManifestHelper
     /**
      * Extract an entry file URL from all of the entries in the manifest
      *
+     * @param string $path
      * @return string
      */
     public static function extractEntry(string $path): string
@@ -227,6 +228,24 @@ class ManifestHelper
                 if (strpos($assetKey, $path) !== false) {
                     return $asset;
                 }
+            }
+        }
+
+        return '';
+    }
+
+
+    /**
+     * Extract an integrity hash for the given $path from the entries in the manifest
+     *
+     * @param string $path
+     * @return string
+     */
+    public static function extractIntegrity(string $path): string
+    {
+        foreach (self::$manifest as $entryKey => $entry) {
+            if (strpos($entryKey, $path) !== false) {
+                return $entry['integrity'] ?? '';
             }
         }
 
@@ -320,11 +339,11 @@ class ManifestHelper
         $pathInfo = pathinfo($path);
         $filename = $pathInfo['filename'];
         $extension = $pathInfo['extension'];
-        $hashPos = strpos($filename, '.') ?: strlen($filename);
+        $hashPos = strrpos($filename, '.') ?: strlen($filename);
         $hash = substr($filename, $hashPos);
         // Vite 5 now uses a `-` to separate the version hash, so account for that as well
         if (empty($hash) && str_contains($filename, '-')) {
-            $hash = substr($filename, strpos($filename, '-'));
+            $hash = substr($filename, strrpos($filename, '-'));
         }
         $filename = str_replace($hash, '', $filename);
 
