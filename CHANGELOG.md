@@ -1,6 +1,6 @@
 # Plugin Vite Changelog
 
-## 5.0.2 - UNRELEASED
+## 5.0.2 - 2024.08.13
 ### Added
 * Add a `craft.vite.integrity()` method that will extract the integrity hash (for building a Content Security Policy)
 * Added an `includeScriptOnloadHandler` config setting that allows you to disable the adding of an `onload` handler on the `<script>` tags (useful when implementing a Content Security Policy)
