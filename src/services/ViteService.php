@@ -148,13 +148,6 @@ class ViteService extends Component
      */
     public function register(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = [])
     {
-        // Filter out empty attributes, but preserve boolean values
-        $preserveBools = function($value) {
-            return is_bool($value) || !empty($value);
-        };
-        $scriptTagAttrs = array_filter($scriptTagAttrs, $preserveBools);
-        $cssTagAttrs = array_filter($cssTagAttrs, $preserveBools);
-
         if ($this->devServerRunning()) {
             $this->devServerRegister($path, $scriptTagAttrs);
 
@@ -256,6 +249,10 @@ class ViteService extends Component
             }
             $this->devServerShimsIncluded = true;
         }
+        // Filter out empty attributes, but preserve boolean values
+        $scriptTagAttrs = array_filter($scriptTagAttrs, static function($value) {
+            return is_bool($value) || !empty($value);
+        });
         // Include the entry script
         $url = FileHelper::createUrl($this->devServerPublic, $path);
         $view->registerJsFile(
@@ -434,13 +431,6 @@ class ViteService extends Component
      */
     public function script(string $path, bool $asyncCss = true, array $scriptTagAttrs = [], array $cssTagAttrs = []): string
     {
-        // Filter out empty attributes, but preserve boolean values
-        $preserveBools = function($value) {
-            return is_bool($value) || !empty($value);
-        };
-        $scriptTagAttrs = array_filter($scriptTagAttrs, $preserveBools);
-        $cssTagAttrs = array_filter($cssTagAttrs, $preserveBools);
-
         if ($this->devServerRunning()) {
             return $this->devServerScript($path, $scriptTagAttrs);
         }
@@ -459,6 +449,10 @@ class ViteService extends Component
     public function devServerScript(string $path, array $scriptTagAttrs = []): string
     {
         $lines = [];
+        // Filter out empty attributes, but preserve boolean values
+        $scriptTagAttrs = array_filter($scriptTagAttrs, static function($value) {
+            return is_bool($value) || !empty($value);
+        });
         // Include any dev server shims
         if (!$this->devServerShimsIncluded) {
             // Include the react-refresh-shim
@@ -544,6 +538,12 @@ class ViteService extends Component
         $view = Craft::$app->getView();
         foreach (array_merge($tags, $legacyTags) as $tag) {
             if (!empty($tag)) {
+                // Filter out empty attributes, but preserve boolean values
+                if (!empty($tag['options'])) {
+                    $tag['options'] = array_filter($tag['options'], static function($value) {
+                        return is_bool($value) || !empty($value);
+                    });
+                }
                 $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
                 switch ($tag['type']) {
                     case 'file':
@@ -629,6 +629,12 @@ class ViteService extends Component
         foreach (array_merge($tags, $legacyTags) as $tag) {
             if (!empty($tag)) {
                 $url = FileHelper::createUrl($this->serverPublic, $tag['url']);
+                // Filter out empty attributes, but preserve boolean values
+                if (!empty($tag['options'])) {
+                    $tag['options'] = array_filter($tag['options'], static function($value) {
+                        return is_bool($value) || !empty($value);
+                    });
+                }
                 switch ($tag['type']) {
                     case 'file':
                         if (!$this->includeScriptOnloadHandler) {
