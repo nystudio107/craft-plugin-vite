@@ -1,5 +1,9 @@
 # Plugin Vite Changelog
 
+## Unreleased
+### Fixed
+* Early-return from `VitePluginService::init()` for console requests ([#31](https://github.com/nystudio107/craft-plugin-vite/issues/31))
+
 ## 5.0.2 - 2024.08.13
 ### Added
 * Add a `craft.vite.integrity()` method that will extract the integrity hash (for building a Content Security Policy)
