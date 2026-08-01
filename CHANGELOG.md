@@ -1,6 +1,9 @@
 # Plugin Vite Changelog
 
-## Unreleased
+## 5.0.3 - UNRELEASED
+### Changed
+* Filter out empty attributes, but preserve boolean values
+
 ### Fixed
 * Early-return from `VitePluginService::init()` for console requests ([#31](https://github.com/nystudio107/craft-plugin-vite/issues/31))
 
