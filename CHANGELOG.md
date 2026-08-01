@@ -1,5 +1,13 @@
 # Plugin Vite Changelog
 
+## 4.0.13 - 2026.08.01
+### Changed
+* Filter out empty attributes, but preserve boolean values
+* Update the devServer check to include `403` status codes, so it will work with Vite > `6.0` ([#103](https://github.com/nystudio107/craft-vite/issues/103))
+
+### Fixed
+* Early-return from `VitePluginService::init()` for console requests ([#31](https://github.com/nystudio107/craft-plugin-vite/issues/31))
+
 ## 4.0.12 - 2024.08.13
 ### Added
 * Add a `craft.vite.integrity()` method that will extract the integrity hash (for building a Content Security Policy)
