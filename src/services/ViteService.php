@@ -179,10 +179,10 @@ class ViteService extends Component
         $url = FileHelper::createUrl($this->devServerInternal, self::VITE_DEVSERVER_PING);
         $response = FileHelper::fetchResponse($url);
         $this->devServerRunningCached = false;
-        // Status code of 200 or 404 means the dev server is running
+        // Status code of 200, 404, or 403 means the dev server is running
         if ($response) {
             $statusCode = $response->getStatusCode();
-            $this->devServerRunningCached = $statusCode === 200 || $statusCode === 404;
+            $this->devServerRunningCached = in_array($statusCode, [200, 404, 403]);
         }
 
         return $this->devServerRunningCached;
