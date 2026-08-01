@@ -3,6 +3,7 @@
 ## 4.0.13 - UNRELEASED
 ### Changed
 * Filter out empty attributes, but preserve boolean values
+* Update the devServer check to include `403` status codes, so it will work with Vite > `6.0` ([#103](https://github.com/nystudio107/craft-vite/issues/103))
 
 ### Fixed
 * Early-return from `VitePluginService::init()` for console requests ([#31](https://github.com/nystudio107/craft-plugin-vite/issues/31))
