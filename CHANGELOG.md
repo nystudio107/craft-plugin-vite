@@ -1,6 +1,6 @@
 # Plugin Vite Changelog
 
-## 1.0.37 - UNRELEASED
+## 1.0.37 - 2026.08.01
 ### Changed
 * Filter out empty attributes, but preserve boolean values
 * Update the devServer check to include `403` status codes, so it will work with Vite > `6.0` ([#103](https://github.com/nystudio107/craft-vite/issues/103))
