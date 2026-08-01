@@ -74,13 +74,15 @@ class VitePluginService extends ViteService
         if (!$this->assetClass || $this->devServerRunning()) {
             return;
         }
+        $request = Craft::$app->getRequest();
+        // https://github.com/nystudio107/craft-plugin-vite/issues/31
+        if ($request->getIsConsoleRequest()) {
+            return;
+        }
         // The Vite service is generally only needed for CP requests & previews, save a db write, see:
         // https://github.com/nystudio107/craft-plugin-vite/issues/27
-        $request = Craft::$app->getRequest();
-        if (!$this->useForAllRequests && !$request->getIsConsoleRequest()) {
-            if (!$request->getIsCpRequest() && !$request->getIsPreview() && !in_array($request->getSegment(1), $this->firstSegmentRequests, true)) {
-                return;
-            }
+        if (!$this->useForAllRequests && !$request->getIsCpRequest() && !$request->getIsPreview() && !in_array($request->getSegment(1), $this->firstSegmentRequests, true)) {
+            return;
         }
         // Map the $manifestPath and $serverPublic to the hashed `/cpresources/` path & URL for our AssetBundle
         $bundle = new $this->assetClass();
